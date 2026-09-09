@@ -1,103 +1,115 @@
-# Forge Example RL Tasks
+# OpenGym — Open-Source RL & Agent Environments
 
-Two deterministic, self-contained Harbor tasks. Each tests whether an agent can
-inspect state it was not told about, act through tools, respect the boundaries
-of what it was asked to do, and report honestly — and each grades that with a
-layered verifier rather than a pass/fail check.
+> **If you find OpenGym useful, please ⭐ star the repo** — it helps others discover it and keeps the project growing.
 
-| Task | Difficulty | Core challenge |
-| --- | --- | --- |
-| [`slack/`](slack/) | hard | Drive a live enterprise cutover through staged reviews where approving one revision releases the next, evidence arrives only after the action that provokes it, and a late rehearsal invalidates readiness the agent has already established |
-| [`task_manager/`](task_manager/) | medium | Hand over a departing teammate's queue: find the whole set, branch each record on its own fields, append a label without replacing the ones already there, and touch nothing else |
+A collection of deterministic, self-contained reinforcement learning environments for training and evaluating AI agents. Each environment is a complete world: it ships its own state, tools, verifier, and reward signal — no shared dependencies, no install steps beyond Docker.
 
-Each directory is a complete Harbor task — `task.toml`, environment, solution,
-tests and verifiers — and stands alone. There is no shared package between them
-and no install step; both import the standard library and nothing else.
+OpenGym is designed for researchers, engineers, and hobbyists who want realistic, graded environments to benchmark agent behavior beyond toy benchmarks.
 
-## How they are built
+Developed by [Mostofa Shakib](https://www.mostofashakib.com).
 
-The same architecture in both:
+---
 
-- **Two containers from one image build.** The agent's container holds the
-  client half only: no seed, no service, no database. The world runs beside it
-  and they share nothing but a directory holding two Unix sockets — one for the
-  agent, one privileged for lifecycle and verifier export.
-- **Tools arrive as an MCP server** declared in `task.toml`, so the agent is
-  handed the workspace rather than told to go looking for it.
-- **A virtual clock in SQLite**, so time is a property of the workspace and two
-  runs of the same episode are byte-identical.
-- **A scenario engine driven by data** — events, triggers and latent rows — so
-  the world reacts to what the agent does instead of replaying a script.
-- **A weighted, layered verifier** with presets and a veto layer, reading only
-  world-side evidence: the tracker's own append-only action log, never the
-  agent's trajectory.
+## Environments
 
-Each task's own README documents its scenario, reward layers and contracts in
-full.
+| Environment | Difficulty | What the agent must do |
+|---|---|---|
+| [`slack/`](slack/) | Hard | Drive a live enterprise system cutover through staged reviews. Approving one revision releases the next, evidence only arrives after the action that triggers it, and a late rehearsal can invalidate readiness already established. |
+| [`task_manager/`](task_manager/) | Medium | Take over a departing teammate's task queue: discover the full set, branch each record on its own fields, append labels without clobbering existing ones, and touch nothing outside scope. |
+
+Each directory is a fully self-contained environment — `task.toml`, Docker environment, reference solution, test suites, and layered verifiers. There is no shared package between them.
+
+---
+
+## How They Are Built
+
+Every environment in OpenGym shares the same architecture:
+
+- **Two containers, one image build.** The agent container holds only the client — no seed, no service, no database. The world runs beside it. The two share nothing but a directory of Unix sockets: one for the agent, one privileged for lifecycle and verifier export.
+
+- **Tools delivered as an MCP server**, declared in `task.toml`. The agent is handed a structured workspace rather than told to go searching for one. No tool hallucination is possible — every model call carries a schema generated from the task's own tool definitions.
+
+- **A virtual clock backed by SQLite**, so time is a deterministic property of the workspace. Two runs of the same episode are byte-identical.
+
+- **A scenario engine driven by data** — events, triggers, and latent rows — so the world reacts to what the agent does instead of replaying a fixed script.
+
+- **A weighted, layered verifier** with presets and a veto layer. It reads only world-side evidence (the tracker's append-only action log), never the agent's trajectory. Rewards are continuous, not binary.
+
+---
 
 ## Prerequisites
 
-| | | why |
-| --- | --- | --- |
-| Python | 3.11+ | to run the suites from a checkout; 3.12 in-image |
-| Docker | with Compose v2 | two images from one context, joined by a socket volume |
-| Harbor | `uv tool install harbor` | runs the task |
-| Ollama | optional | the default agent for `task_manager/` runs a local model |
+| Dependency | Version | Purpose |
+|---|---|---|
+| Python | 3.11+ | Running test suites from a checkout (3.12 inside image) |
+| Docker | Compose v2 | Two containers from one build context, joined by a socket volume |
+| Harbor | `uv tool install harbor` | Task runner that wires agent ↔ world |
+| Ollama | optional | Default local model backend for `task_manager/` |
 
-Nothing here needs an API key by default. A hosted model needs its own
-credential in `.env` at the repository root; the oracle runs, the test suites
-and the offline grader auditors need none.
+No API key is required by default. To use a hosted model, add credentials to a `.env` file at the repo root. The oracle, test suites, and offline grader need none.
+
+---
 
 ## Running
 
-From the repository root:
-
 ```bash
-# Deterministic reference run. No model, no key. Scores exactly 1.0.
-harbor run -p ./example_tasks/task_manager -a oracle
-harbor run -p ./example_tasks/slack -a oracle
+# Deterministic reference run — no model, no key. Scores exactly 1.0.
+harbor run -p ./task_manager -a oracle
+harbor run -p ./slack -a oracle
 
-# A model run, with cleanup, writing a job under the task's jobs/harbor/.
-./example_tasks/task_manager/run.sh          # local Ollama by default
-./example_tasks/slack/run.sh                 # Claude Code through OpenRouter
+# Run with a local model (Ollama by default)
+./task_manager/run.sh
+./slack/run.sh
 
-# Stop a task's Harbor processes, containers and viewer ports.
-./example_tasks/task_manager/kill.sh
+# Stop all Harbor processes, containers, and viewer ports for a task
+./task_manager/kill.sh
+./slack/kill.sh
 ```
 
-Both tasks ship the same provider-agnostic agent, bound to their own workspace
-([`slack/agent/`](slack/agent/), [`task_manager/agent/`](task_manager/agent/)).
-Ollama is the default because it costs nothing and needs no account; switching
-model is one variable, and the environment stays offline either way because the
-loop runs on the host and only the tool calls go into the container.
+Both environments ship a provider-agnostic agent. Ollama is the default because it needs no account and runs fully offline — only the tool calls enter the container. Switching models is a single environment variable:
 
 ```bash
-MODEL=ollama/gemma4:26b ./example_tasks/task_manager/run.sh
-MODEL=openrouter/anthropic/claude-opus-5 ./example_tasks/slack/run.sh
+MODEL=ollama/gemma4:26b ./task_manager/run.sh
+MODEL=openrouter/anthropic/claude-opus-5 ./slack/run.sh
 
-# Or without Harbor at all: a throwaway workspace, then the real verifier.
-cd example_tasks/task_manager && PYTHONPATH=environment:. python3 -m agent --local --grade
+# Run without Harbor — a throwaway local workspace + real verifier
+cd task_manager && PYTHONPATH=environment:. python3 -m agent --local --grade
 ```
 
-Every model call carries a schema generated from the task's own tool
-definitions, so a model cannot name a tool that does not exist or invent an
-argument. `qwen3.6:35b` solves `task_manager/` outright at 1.0 and reaches about
-0.23 on `slack/`, which is a useful floor rather than a demonstration that the
-harder task is easy.
+**Benchmark results so far:** `qwen3:30b` solves `task_manager/` at 1.0 and reaches ~0.23 on `slack/` — a meaningful floor that shows the harder task is not trivially solvable.
+
+---
 
 ## Tests
 
-Plain scripts, no test runner. Each task's `tests/test.sh` **is** its Harbor
-verifier, and running it from a checkout runs the same suites the graded
-container does — 17 for `slack/`, 13 for `task_manager/`:
+No test runner required. Each environment's `tests/test.sh` is its Harbor verifier — running it from a checkout executes the same suites the graded container runs (17 for `slack/`, 13 for `task_manager/`):
 
 ```bash
-cd example_tasks/task_manager
+cd task_manager
 export PYTHONPATH=environment:tests:.
-sed -n 's/^for suite in \(.*\); do$/\1/p' tests/test.sh | tr ' ' '\n' |
-  while read -r s; do python3 "tests/$s.py" >/dev/null || echo "FAILED $s"; done
+sed -n 's/^for suite in \(.*\); do$/\1/p' tests/test.sh | tr ' ' '\n' | \
+  while read -r s; do python3 "tests/$s.py" > /dev/null || echo "FAILED $s"; done
 ```
 
-Some checks are authoring-time guards that read `task.toml`, the Dockerfile or
-the reference solution. Those files deliberately do not ship, so the guards run
-from a checkout and stand aside inside the image.
+Some checks are authoring-time guards (reading `task.toml`, the Dockerfile, or the reference solution) and are designed to run from a checkout, not inside the image.
+
+---
+
+## Contributing
+
+New environments are welcome. Each environment should:
+- Be fully self-contained (no cross-environment imports)
+- Ship a `task.toml`, a Dockerized world, a reference solution, and a layered verifier
+- Be deterministic across runs given the same seed
+
+Open a PR with your environment in its own top-level directory.
+
+---
+
+## License
+
+MIT
+
+---
+
+*Built by [Mostofa Shakib](https://www.mostofashakib.com)*
