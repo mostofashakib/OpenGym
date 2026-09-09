@@ -106,6 +106,25 @@ Open a PR with your environment in its own top-level directory.
 
 ---
 
+## Citation
+
+If you use OpenGym environments as part of your world or experimental setup in research, please cite this repository:
+
+```bibtex
+@misc{shakib2026opengym,
+  author       = {Shakib, Mostofa},
+  title        = {{OpenGym}: Open-Source Reinforcement Learning and Agent Environments},
+  year         = {2026},
+  howpublished = {\url{https://github.com/mostofashakib/OpenGym}},
+}
+```
+
+Or in plain text:
+
+> Mostofa Shakib. *OpenGym: Open-Source Reinforcement Learning and Agent Environments*, 2026. https://github.com/mostofashakib/OpenGym
+
+---
+
 ## License
 
 MIT
