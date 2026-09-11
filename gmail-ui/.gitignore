@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Environments
+.venv/
+env/
+venv/
+
+# Next.js
+.next/
+node_modules/
+
+# Logs and jobs
+logs/
+jobs/
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
+*.sqlite3
+*.sql
+
+# Artifacts
+trajectory.json
+trajectory.txt
+oracle.txt
+reward.json
+observability.json

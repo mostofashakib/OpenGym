@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gmail-ui"
+version = "0.1.0"
+description = "Gmail UI and Harbor evaluation agent workspace"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "harbor>=0.22.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["agent*", "gmail_sim*", "tools*", "verifiers*", "observability*"]
+
+[tool.setuptools.package-dir]
+gmail_sim = "environment/gmail_sim"

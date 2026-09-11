@@ -1,0 +1,69 @@
+{
+  "sidebar": {
+    "collapsed": true
+  },
+  "layout": {
+    "headerPosition": "top"
+  },
+  "appName": "Letterfox",
+  "appLogo": "quill",
+  "sidebarLabels": {
+    "compose": "New message",
+    "inbox": "Inbox",
+    "starred": "Starred",
+    "snoozed": "Snoozed",
+    "sent": "Sent",
+    "drafts": "In progress",
+    "important": "Focus",
+    "all": "All Mail",
+    "spam": "Junk",
+    "trash": "Trash"
+  },
+  "searchInput": {
+    "placeholder": "Search mail",
+    "align": "center",
+    "widthClass": "max-w-xl",
+    "paddingLeftClass": "pl-12",
+    "paddingRightClass": "pr-14",
+    "textAlignClass": "text-center",
+    "marginClass": "mx-auto",
+    "mode": "expanded"
+  },
+  "sidebarFolderOrder": [
+    "trash",
+    "spam",
+    "starred",
+    "important",
+    "snoozed",
+    "all",
+    "sent",
+    "inbox",
+    "drafts"
+  ],
+  "themePalette": {
+    "name": "slate",
+    "primary": "#475569",
+    "primaryHover": "#334155",
+    "bg": "#F8FAFC",
+    "surface": "#F1F5F9",
+    "surfaceHover": "#E2E8F0",
+    "text": "#0F172A",
+    "textMuted": "#475569",
+    "border": "#E2E8F0"
+  },
+  "threadIcons": {
+    "star": "star",
+    "archive": "archive",
+    "trash": "trash2"
+  },
+  "threadOpenMode": "page",
+  "selectionToolbar": {
+    "paginationPosition": "top"
+  },
+  "emailListView": "list",
+  "emailListItemOrder": [
+    "time",
+    "message",
+    "sender"
+  ]
+}

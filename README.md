@@ -14,6 +14,7 @@ Developed by [Mostofa Shakib](https://www.mostofashakib.com).
 
 | Environment | Difficulty | What the agent must do |
 |---|---|---|
+| [`gmail-ui/`](gmail-ui/) | Medium | Triage incoming mailbox communications: search and flag critical invoice notices with star and importance flags, archive delivery notices, and prepare confirmation drafts. |
 | [`slack/`](slack/) | Hard | Drive a live enterprise system cutover through staged reviews. Approving one revision releases the next, evidence only arrives after the action that triggers it, and a late rehearsal can invalidate readiness already established. |
 | [`task_manager/`](task_manager/) | Medium | Take over a departing teammate's task queue: discover the full set, branch each record on its own fields, append labels without clobbering existing ones, and touch nothing outside scope. |
 

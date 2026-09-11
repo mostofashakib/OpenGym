@@ -1,0 +1,49 @@
+schema_version = "1.4"
+artifacts = [
+  { source = "/logs/agent", exclude = ["sessions"] },
+  { source = "/var/lib/gmail/state-export.json", service = "gmail" },
+]
+
+[task]
+name = "opengym/gmail-vendor-renewals-triage"
+version = "1.0.0"
+description = "Triage quarterly vendor infrastructure renewals and incoming communications ahead of fiscal lock: review and prioritize cloud infrastructure invoice, archive logistics shipment notifications, and prepare finance confirmation draft."
+authors = [{ name = "Mostofa Shakib" }]
+keywords = ["gmail", "email-triage", "harbor", "agent-environment", "mcp", "vendor-renewals", "fiscal-lock"]
+
+[metadata]
+difficulty = "medium"
+difficulty_explanation = "Requires discovering unread messages, filtering by sender and subject, managing label and status flags, creating saved draft responses, and adhering to strict scope boundaries."
+category = "agent-environment"
+environment_service = "gmail"
+originality = "Built as a deterministic OpenGym email agent evaluation environment with full web UI and REST API."
+
+[verifier]
+timeout_sec = 240.0
+environment_mode = "shared"
+user = "root"
+
+[[verifier.collect]]
+command = "python3 -m gmail_sim.admin_cli export_state --out /var/lib/gmail/state-export.json"
+service = "gmail"
+timeout_sec = 60.0
+user = "gmaild"
+
+[agent]
+timeout_sec = 1200.0
+user = "agent"
+network_mode = "allowlist"
+allowed_hosts = ["openrouter.ai"]
+
+[environment]
+network_mode = "no-network"
+build_timeout_sec = 900.0
+os = "linux"
+cpus = 2
+memory_mb = 2048
+storage_mb = 4096
+
+[[environment.mcp_servers]]
+name = "gmail"
+transport = "stdio"
+command = "/usr/local/bin/gmail-mcp"
