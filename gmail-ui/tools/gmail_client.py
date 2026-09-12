@@ -118,17 +118,17 @@ class GmailClient:
         res = self._call_socket("get_email", args)
         if res is not None:
             return res
-        msg_id = args["id"]
+        msg_id = args.get("id") or args.get("email_id") or args.get("message_id") or ""
         return self._request("GET", f"/api/emails/{urllib.parse.quote(msg_id)}")
 
     def tool_send_email(self, args: dict[str, Any]) -> dict[str, Any]:
         res = self._call_socket("send_email", args)
         if res is not None:
             return res
-        text = args.get("text") or args.get("body") or ""
+        text = args.get("text") or args.get("body") or args.get("content") or ""
         payload = {
-            "to": args["to"],
-            "subject": args["subject"],
+            "to": args.get("to") or args.get("to_addresses") or args.get("recipient"),
+            "subject": args.get("subject", ""),
             "text": text,
         }
         if "cc" in args:
@@ -143,19 +143,25 @@ class GmailClient:
         res = self._call_socket("update_email", args)
         if res is not None:
             return res
-        msg_id = args["id"]
+        msg_id = args.get("id") or args.get("email_id") or args.get("message_id") or ""
         payload: dict[str, Any] = {}
-        for key in ("isRead", "isStarred", "isImportant"):
+        for key, alt in [("isRead", "is_read"), ("isStarred", "is_starred"), ("isImportant", "is_important")]:
             if key in args:
                 payload[key] = args[key]
-        if args.get("isArchived"):
+            elif alt in args:
+                payload[key] = args[alt]
+        if args.get("isArchived") or args.get("is_archived"):
             payload["action"] = "archive"
-        elif args.get("isTrash"):
+        elif args.get("isTrash") or args.get("is_trash"):
             payload["action"] = "trash"
-        if "addLabels" in args:
-            payload["addLabel"] = args["addLabels"][0] if isinstance(args["addLabels"], list) and args["addLabels"] else args["addLabels"]
-        if "removeLabels" in args:
-            payload["removeLabel"] = args["removeLabels"][0] if isinstance(args["removeLabels"], list) and args["removeLabels"] else args["removeLabels"]
+        if "action" in args:
+            payload["action"] = args["action"]
+        add_lbls = args.get("addLabels") or args.get("add_labels")
+        if add_lbls:
+            payload["addLabel"] = add_lbls[0] if isinstance(add_lbls, list) and add_lbls else add_lbls
+        rm_lbls = args.get("removeLabels") or args.get("remove_labels")
+        if rm_lbls:
+            payload["removeLabel"] = rm_lbls[0] if isinstance(rm_lbls, list) and rm_lbls else rm_lbls
         return self._request("PUT", f"/api/emails/{urllib.parse.quote(msg_id)}", json_data=payload)
 
     def tool_list_threads(self, args: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -169,15 +175,15 @@ class GmailClient:
         res = self._call_socket("get_thread", args)
         if res is not None:
             return res
-        t_id = args["id"]
+        t_id = args.get("id") or args.get("thread_id") or args.get("threadId") or ""
         return self._request("GET", f"/api/threads/{urllib.parse.quote(t_id)}")
 
     def tool_reply_thread(self, args: dict[str, Any]) -> dict[str, Any]:
         res = self._call_socket("reply_thread", args)
         if res is not None:
             return res
-        t_id = args["thread_id"]
-        text = args.get("text") or args.get("body") or ""
+        t_id = args.get("thread_id") or args.get("id") or args.get("threadId") or ""
+        text = args.get("text") or args.get("body") or args.get("content") or ""
         payload: dict[str, Any] = {"text": text}
         if "reply_to_id" in args:
             payload["replyToId"] = args["reply_to_id"]
@@ -189,7 +195,8 @@ class GmailClient:
         res = self._call_socket("search_emails", args)
         if res is not None:
             return res
-        params = {"q": args["query"]}
+        query_val = args.get("query") or args.get("q") or args.get("search") or ""
+        params = {"q": query_val}
         if "anywhere" in args:
             params["anywhere"] = args["anywhere"]
         return self._request("GET", "/api/search", params=params)
@@ -204,9 +211,10 @@ class GmailClient:
         res = self._call_socket("create_draft", args)
         if res is not None:
             return res
-        text = args.get("text") or args.get("body") or ""
+        text = args.get("text") or args.get("body") or args.get("content") or ""
+        to_field = args.get("to") or args.get("to_addresses") or args.get("recipient") or []
         payload = {
-            "to": args.get("to", []),
+            "to": to_field,
             "subject": args.get("subject", ""),
             "text": text,
         }
@@ -220,28 +228,28 @@ class GmailClient:
         res = self._call_socket("update_draft", args)
         if res is not None:
             return res
-        draft_id = args["id"]
+        draft_id = args.get("id") or args.get("draft_id") or args.get("draftId") or ""
         payload: dict[str, Any] = {}
         if "to" in args:
             payload["to"] = args["to"]
         if "subject" in args:
             payload["subject"] = args["subject"]
-        if "body" in args or "text" in args:
-            payload["text"] = args.get("text") or args.get("body")
+        if "body" in args or "text" in args or "content" in args:
+            payload["text"] = args.get("text") or args.get("body") or args.get("content")
         return self._request("PUT", f"/api/drafts/{urllib.parse.quote(draft_id)}", json_data=payload)
 
     def tool_send_draft(self, args: dict[str, Any]) -> dict[str, Any]:
         res = self._call_socket("send_draft", args)
         if res is not None:
             return res
-        draft_id = args["id"]
+        draft_id = args.get("id") or args.get("draft_id") or args.get("draftId") or ""
         return self._request("POST", f"/api/drafts/{urllib.parse.quote(draft_id)}/send")
 
     def tool_delete_draft(self, args: dict[str, Any]) -> dict[str, Any]:
         res = self._call_socket("delete_draft", args)
         if res is not None:
             return res
-        draft_id = args["id"]
+        draft_id = args.get("id") or args.get("draft_id") or args.get("draftId") or ""
         return self._request("DELETE", f"/api/drafts/{urllib.parse.quote(draft_id)}")
 
     def tool_list_labels(self, args: dict[str, Any] | None = None) -> dict[str, Any]:

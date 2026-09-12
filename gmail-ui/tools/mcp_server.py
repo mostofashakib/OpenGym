@@ -90,6 +90,7 @@ def dispatch(
         arguments = params.get("arguments") or {}
         if not isinstance(tool_name, str):
             return _error(msg_id, INVALID_PARAMS, "`name` must be a string.")
+        tool_name = tool_name.removeprefix("gmail_").removeprefix("gmail.").removeprefix("gmail__")
         if not isinstance(arguments, dict):
             return _error(msg_id, INVALID_PARAMS, "`arguments` must be an object.")
 

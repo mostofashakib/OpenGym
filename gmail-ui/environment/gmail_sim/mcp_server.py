@@ -108,6 +108,7 @@ def dispatch(message: dict[str, Any], socket_path: str = AGENT_SOCKET) -> dict[s
         name = params.get("name")
         if not isinstance(name, str) or not name:
             return _error(message_id, INVALID_PARAMS, "tools/call requires a tool name.")
+        name = name.removeprefix("gmail_").removeprefix("gmail.").removeprefix("gmail__")
         arguments = params.get("arguments") or {}
         if not isinstance(arguments, dict):
             return _error(message_id, INVALID_PARAMS, "arguments must be an object.")

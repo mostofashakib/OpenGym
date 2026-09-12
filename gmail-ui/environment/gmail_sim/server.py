@@ -57,14 +57,20 @@ class AgentHandler(socketserver.StreamRequestHandler):
             if not raw:
                 return
             req = decode(raw)
-            tool = req.get("tool")
-            args = req.get("arguments") or req.get("input") or {}
+            tool = req.get("tool") or req.get("op") or req.get("name") or ""
+            if isinstance(tool, str):
+                tool = tool.removeprefix("gmail_").removeprefix("gmail.").removeprefix("gmail__")
+            args = req.get("arguments") or req.get("input") or req.get("payload") or req.get("params") or {}
+            if not isinstance(args, dict):
+                args = {}
 
-            if tool == "list_tools":
+            if tool in ("list_tools", "tools/list"):
                 res = {"ok": True, "result": {"tools": list(get_tool_definitions())}}
             elif tool == "export_state":
                 with get_connection(self.db_path) as conn:
                     res = {"ok": True, "result": export_state(conn)}
+            elif tool == "ping":
+                res = {"ok": True, "result": {"status": "healthy"}}
             elif tool in TOOL_NAMES:
                 try:
                     res = {"ok": True, "result": execute_tool(self.db_path, tool, args)}
@@ -89,7 +95,12 @@ class AdminHandler(socketserver.StreamRequestHandler):
             if not raw:
                 return
             req = decode(raw)
-            op = req.get("op") or req.get("tool")
+            op = req.get("op") or req.get("tool") or req.get("name") or ""
+            if isinstance(op, str):
+                op = op.removeprefix("gmail_").removeprefix("gmail.").removeprefix("gmail__")
+            args = req.get("arguments") or req.get("input") or req.get("payload") or req.get("params") or {}
+            if not isinstance(args, dict):
+                args = {}
 
             if op == "ping":
                 res = {"ok": True, "result": {"status": "healthy"}}
@@ -97,8 +108,9 @@ class AdminHandler(socketserver.StreamRequestHandler):
                 with get_connection(self.db_path) as conn:
                     state = export_state(conn)
                 res = {"ok": True, "result": state}
+            elif op in ("list_tools", "tools/list"):
+                res = {"ok": True, "result": {"tools": list(get_tool_definitions())}}
             elif op in TOOL_NAMES:
-                args = req.get("arguments") or {}
                 res = {"ok": True, "result": execute_tool(self.db_path, op, args)}
             else:
                 res = {"ok": False, "error": {"code": "unknown_op", "message": f"Unknown op '{op}'"}}

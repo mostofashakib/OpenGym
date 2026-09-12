@@ -83,6 +83,61 @@ class TestGmailSim(unittest.TestCase):
         self.assertIn("totalInbox", counters)
         self.assertIn("unread", counters)
 
+    def test_search_emails_operators(self) -> None:
+        # Search from:
+        res = execute_tool(self.db_path, "search_emails", {"query": "from:billing@company.com"})
+        msgs = res["messages"]
+        self.assertGreater(len(msgs), 0)
+        self.assertTrue(all("billing@company.com" in m["from"] for m in msgs))
+
+        # Search is:unread
+        unread_res = execute_tool(self.db_path, "search_emails", {"query": "is:unread"})
+        self.assertTrue(all(not m["isRead"] for m in unread_res["messages"]))
+
+        # Search subject:
+        sub_res = execute_tool(self.db_path, "search_emails", {"query": "subject:invoice"})
+        self.assertGreater(len(sub_res["messages"]), 0)
+
+        # Search OR
+        or_res = execute_tool(self.db_path, "search_emails", {"query": "from:billing@company.com OR from:shipping@logistics.net"})
+        senders = {m["from"] for m in or_res["messages"]}
+        self.assertIn("billing@company.com", senders)
+        self.assertIn("shipping@logistics.net", senders)
+
+        # Search with q instead of query
+        q_res = execute_tool(self.db_path, "search_emails", {"q": "from:billing@company.com"})
+        self.assertGreater(len(q_res["messages"]), 0)
+
+    def test_flexible_arguments_and_aliases(self) -> None:
+        # Get by email_id
+        inbox_res = execute_tool(self.db_path, "list_emails", {"folder": "inbox"})
+        first_id = inbox_res["messages"][0]["id"]
+        msg_by_alias = execute_tool(self.db_path, "get_email", {"email_id": first_id})
+        self.assertEqual(msg_by_alias["id"], first_id)
+
+        # Update with snake_case
+        update_res = execute_tool(
+            self.db_path,
+            "update_email",
+            {"email_id": first_id, "is_starred": True, "is_important": True, "is_read": True},
+        )
+        self.assertTrue(update_res["message"]["isStarred"])
+        self.assertTrue(update_res["message"]["is_starred"])
+        self.assertTrue(update_res["message"]["isImportant"])
+        self.assertTrue(update_res["message"]["is_important"])
+        self.assertTrue(update_res["message"]["isRead"])
+        self.assertTrue(update_res["message"]["is_read"])
+
+    def test_list_threads_filtering(self) -> None:
+        # Filter by folder
+        inbox_threads = execute_tool(self.db_path, "list_threads", {"folder": "inbox"})["threads"]
+        self.assertGreater(len(inbox_threads), 0)
+
+        # Filter by query
+        invoice_threads = execute_tool(self.db_path, "list_threads", {"q": "invoice"})["threads"]
+        self.assertGreater(len(invoice_threads), 0)
+        self.assertTrue(any("invoice" in t["subject"].lower() for t in invoice_threads))
+
     def test_export_state(self) -> None:
         with get_connection(self.db_path) as conn:
             state = export_state(conn)

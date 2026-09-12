@@ -43,6 +43,7 @@ TOOL_DEFINITIONS: tuple[dict[str, Any], ...] = (
             "important": BOOLEAN,
             "unread": BOOLEAN,
             "q": TEXT,
+            "query": TEXT,
             "label": TEXT,
         },
         [],
@@ -50,7 +51,7 @@ TOOL_DEFINITIONS: tuple[dict[str, Any], ...] = (
     _tool(
         "get_email",
         "Retrieve the full details of a single email message by its ID.",
-        {"id": TEXT},
+        {"id": TEXT, "email_id": TEXT},
         ["id"],
     ),
     _tool(
@@ -72,27 +73,35 @@ TOOL_DEFINITIONS: tuple[dict[str, Any], ...] = (
         "Update message state such as read/unread, starred, important, archive, trash, or modify labels.",
         {
             "id": TEXT,
+            "email_id": TEXT,
             "isRead": BOOLEAN,
+            "is_read": BOOLEAN,
             "isStarred": BOOLEAN,
+            "is_starred": BOOLEAN,
             "isImportant": BOOLEAN,
+            "is_important": BOOLEAN,
             "isArchived": BOOLEAN,
+            "is_archived": BOOLEAN,
             "isTrash": BOOLEAN,
+            "is_trash": BOOLEAN,
             "action": TEXT,
             "addLabels": STRING_LIST,
+            "add_labels": STRING_LIST,
             "removeLabels": STRING_LIST,
+            "remove_labels": STRING_LIST,
         },
         ["id"],
     ),
     _tool(
         "list_threads",
         "List email conversation threads ordered by last activity date.",
-        {"folder": TEXT, "q": TEXT},
+        {"folder": TEXT, "q": TEXT, "query": TEXT},
         [],
     ),
     _tool(
         "get_thread",
         "Retrieve a thread and all messages within it by thread ID.",
-        {"id": TEXT},
+        {"id": TEXT, "thread_id": TEXT},
         ["id"],
     ),
     _tool(
@@ -100,6 +109,7 @@ TOOL_DEFINITIONS: tuple[dict[str, Any], ...] = (
         "Reply to an existing conversation thread.",
         {
             "thread_id": TEXT,
+            "id": TEXT,
             "body": TEXT,
             "text": TEXT,
             "to": STRING_LIST,
@@ -130,6 +140,7 @@ TOOL_DEFINITIONS: tuple[dict[str, Any], ...] = (
         "Update the recipients, subject, or content of an existing draft.",
         {
             "id": TEXT,
+            "draft_id": TEXT,
             "to": ADDRESSES,
             "subject": TEXT,
             "body": TEXT,
@@ -140,13 +151,13 @@ TOOL_DEFINITIONS: tuple[dict[str, Any], ...] = (
     _tool(
         "send_draft",
         "Send an existing draft email by its ID and remove it from drafts.",
-        {"id": TEXT},
+        {"id": TEXT, "draft_id": TEXT},
         ["id"],
     ),
     _tool(
         "delete_draft",
         "Permanently delete an email draft by its ID.",
-        {"id": TEXT},
+        {"id": TEXT, "draft_id": TEXT},
         ["id"],
     ),
     _tool(
@@ -164,7 +175,7 @@ TOOL_DEFINITIONS: tuple[dict[str, Any], ...] = (
     _tool(
         "search_emails",
         "Search email messages by query text matching subject, body, or sender.",
-        {"query": TEXT},
+        {"query": TEXT, "q": TEXT},
         ["query"],
     ),
     _tool(
@@ -185,6 +196,7 @@ TOOL_DEFINITIONS: tuple[dict[str, Any], ...] = (
         {
             "summary": TEXT,
             "affected_message_ids": STRING_LIST,
+            "affectedMessageIds": STRING_LIST,
         },
         [],
     ),
