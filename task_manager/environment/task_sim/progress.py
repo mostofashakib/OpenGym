@@ -21,6 +21,8 @@ from typing import Any
 from task_sim.seed import (
     REASSIGNED_TASKS,
     REASSIGNMENT_SCENARIO,
+    REASSIGNMENT_TASKS,
+    RELEASE_RECONCILIATION_SCENARIO,
     TRACKER_TASKS,
 )
 
@@ -157,11 +159,16 @@ def check_workspace_integrity(state: dict[str, Any]) -> None:
         raise MissingSectionsError(missing)
 
     present = {task["task_id"] for task in state["tasks"]}
-    vanished = SEEDED_TASK_IDS - present
+    expected_seeded = (
+        frozenset(row[0] for row in TRACKER_TASKS)
+        if len(present) > 35
+        else frozenset(row[0] for row in REASSIGNMENT_TASKS)
+    )
+    vanished = expected_seeded - present
     if vanished:
         raise DestroyedHistoryError(vanished)
 
-    declared = set(WORKSPACE_MILESTONES)
+    declared = set(WORKSPACE_MILESTONES) | {event.event_id for event in RELEASE_RECONCILIATION_SCENARIO.events}
     ledger = {event["event_id"] for event in state["scenario_events"]}
     if ledger - declared:
         raise UnknownEventError(ledger - declared)
@@ -245,7 +252,8 @@ def side_effects(state: dict[str, Any]) -> list[str]:
 
 def _evaluate_workspace(state: dict[str, Any]) -> dict[str, bool]:
     events = _events(state)
-    return {event: events.get(event) == "activated" for event in WORKSPACE_MILESTONES}
+    target = [e["event_id"] for e in state.get("scenario_events", [])] or list(WORKSPACE_MILESTONES)
+    return {event: events.get(event) == "activated" for event in target}
 
 
 def workspace_progress(state: dict[str, Any]) -> dict[str, Any]:

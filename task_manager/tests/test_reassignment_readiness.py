@@ -34,7 +34,12 @@ if os.path.isdir("/opt/grading"):
 from task_sim.progress import IntegrityError, check_workspace_integrity  # noqa: E402
 from task_sim.protocol import ADMIN_SOCKET, request  # noqa: E402
 from verifiers import Episode, TieredRewardEngine, blank_reward_dict, reward_dict  # noqa: E402
-from verifiers.contracts.reassignment import build_contract  # noqa: E402
+
+_contract_name = os.environ.get("TASK_CONTRACT", "reassignment").strip()
+if _contract_name in ("release_reconciliation", "release-reconciliation"):
+    from verifiers.contracts.release_reconciliation import build_contract  # noqa: E402
+else:
+    from verifiers.contracts.reassignment import build_contract  # noqa: E402
 from verifiers.presets import DEFAULT_PRESET, load_experiment  # noqa: E402
 
 REWARD_DIR = Path(os.environ.get("TASK_REWARD_DIR", "/logs/verifier"))

@@ -28,6 +28,12 @@ from task_sim.models import (
 from task_sim.scenario import Scenario
 from task_sim.seed import (
     REASSIGNMENT_SCENARIO,
+    REASSIGNMENT_ASSIGNMENTS,
+    REASSIGNMENT_DEPENDENCIES,
+    REASSIGNMENT_MILESTONES,
+    REASSIGNMENT_PROJECTS,
+    REASSIGNMENT_TASKS,
+    REASSIGNMENT_USERS,
     TRACKER_ASSIGNMENTS,
     TRACKER_DEPENDENCIES,
     TRACKER_MILESTONES,
@@ -233,13 +239,21 @@ def seed_database(
         connection.executescript(SCHEMA)
         VIRTUAL_CLOCK.initialize(connection, 0)
 
-        connection.executemany("INSERT INTO users VALUES (?, ?, ?, ?, ?, ?)", TRACKER_USERS)
+        is_release = any("release" in getattr(e, "event_id", "") for e in scenario.events) or any("rel_" in getattr(r, "rule_id", "") for r in scenario.rules)
+        users = TRACKER_USERS if is_release else REASSIGNMENT_USERS
+        projects = TRACKER_PROJECTS if is_release else REASSIGNMENT_PROJECTS
+        milestones = TRACKER_MILESTONES if is_release else REASSIGNMENT_MILESTONES
+        tasks = TRACKER_TASKS if is_release else REASSIGNMENT_TASKS
+        assignments = TRACKER_ASSIGNMENTS if is_release else REASSIGNMENT_ASSIGNMENTS
+        dependencies = TRACKER_DEPENDENCIES if is_release else REASSIGNMENT_DEPENDENCIES
+
+        connection.executemany("INSERT INTO users VALUES (?, ?, ?, ?, ?, ?)", users)
         connection.executemany(
             "INSERT INTO projects VALUES (?, ?, ?, ?, ?, ?)",
             [
                 (project_id, name, description, owner_id,
                  VIRTUAL_CLOCK.at(step), 1 if archived else 0)
-                for project_id, name, description, owner_id, step, archived in TRACKER_PROJECTS
+                for project_id, name, description, owner_id, step, archived in projects
             ],
         )
         connection.executemany(
@@ -247,7 +261,7 @@ def seed_database(
             [
                 (milestone_id, project_id, title, description, due_at_ms,
                  VIRTUAL_CLOCK.at(step))
-                for milestone_id, project_id, title, description, due_at_ms, step in TRACKER_MILESTONES
+                for milestone_id, project_id, title, description, due_at_ms, step in milestones
             ],
         )
         connection.executemany(
@@ -263,18 +277,18 @@ def seed_database(
                 for (
                     task_id, title, description, creator_id, assignee_id, status,
                     project_id, milestone_id, due_at_ms, priority, labels, step,
-                ) in TRACKER_TASKS
+                ) in tasks
             ],
         )
         connection.executemany(
             "INSERT INTO assignments VALUES (?, ?, ?, ?, ?)",
             [
                 (assignment_id, task_id, user_id, assigned_by, VIRTUAL_CLOCK.at(step))
-                for assignment_id, task_id, user_id, assigned_by, step in TRACKER_ASSIGNMENTS
+                for assignment_id, task_id, user_id, assigned_by, step in assignments
             ],
         )
         connection.executemany(
-            "INSERT INTO task_dependencies VALUES (?, ?, ?)", TRACKER_DEPENDENCIES
+            "INSERT INTO task_dependencies VALUES (?, ?, ?)", dependencies
         )
 
         connection.executemany(

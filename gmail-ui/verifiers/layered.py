@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import os
 from typing import Any
 
 from tools.gmail_client import GmailClient
 from verifiers.auditor import audit_run
-from verifiers.checks import evaluate_triage_task
+from verifiers.checks import _load_state, evaluate_compromise_triage_task, evaluate_triage_task
 from verifiers.results import (
     CheckOutcome,
     EpisodeEvaluation,
@@ -19,8 +20,27 @@ def evaluate_episode(
     client: GmailClient | None = None,
     events: list[dict[str, Any]] | None = None,
     state_data: dict[str, Any] | None = None,
+    task_name: str | None = None,
 ) -> EpisodeEvaluation:
-    checks = evaluate_triage_task(client, state_data=state_data)
+    task = task_name or os.environ.get("TASK_NAME") or os.environ.get("TASK")
+    if task in ("incident-compromise-triage", "compromise-triage"):
+        checks = evaluate_compromise_triage_task(client, state_data=state_data)
+    elif task in ("urgent-email-triage", "vendor-renewals-triage"):
+        checks = evaluate_triage_task(client, state_data=state_data)
+    else:
+        state = _load_state(client, state_data)
+        has_compromise_markers = False
+        if state:
+            drafts = state.get("drafts", [])
+            has_compromise_markers = any(
+                any("legal" in addr.lower() or "vp-eng" in addr.lower() for addr in d.get("to", []))
+                for d in drafts
+            )
+        if has_compromise_markers:
+            checks = evaluate_compromise_triage_task(client, state_data=state)
+        else:
+            checks = evaluate_triage_task(client, state_data=state_data)
+
     penalties = audit_run(events)
 
     total_weight = sum(c.weight for c in checks) or 1.0
@@ -31,7 +51,7 @@ def evaluate_episode(
     final_reward = max(0.0, min(1.0, base_score - penalty_total))
 
     # Breakdown by layers: task_actions, final_state, cleanliness
-    task_action_checks = [c for c in checks if "flagged" in c.name or "draft" in c.name]
+    task_action_checks = [c for c in checks if any(k in c.name for k in ("flagged", "draft", "held", "quarantined"))]
     final_state_checks = [c for c in checks if "archived" in c.name]
     cleanliness_checks = [c for c in checks if "clean" in c.name]
 

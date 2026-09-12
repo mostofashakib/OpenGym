@@ -10,7 +10,6 @@
 #   MODEL=ollama/gemma4:26b ./run.sh
 #   MODEL=openrouter/anthropic/claude-opus-5 ./run.sh     # needs OPEN_ROUTER_KEY
 #   MODEL=anthropic/claude-opus-5 ./run.sh                # needs ANTHROPIC_API_KEY
-#   MODEL=openai/gpt-5 ./run.sh                           # needs OPENAI_API_KEY
 #
 # AGENT switches the harness rather than the model, for comparing this loop
 # against a full coding agent on the same task:
@@ -23,7 +22,12 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 ENV_FILE="$REPO_ROOT/.env"
-TASK_PATH="$SCRIPT_DIR"
+TASK_NAME="${TASK:-release-reconciliation}"
+if [ -d "$SCRIPT_DIR/tasks/$TASK_NAME" ]; then
+  TASK_PATH="$SCRIPT_DIR/tasks/$TASK_NAME"
+else
+  TASK_PATH="$SCRIPT_DIR"
+fi
 AGENT="${AGENT:-agent.harbor_agent:TrackerAgent}"
 MODEL="${MODEL:-ollama/qwen3.6:35b}"
 # Keep one level of directories below JOBS_PATH: each child is a complete Harbor
@@ -35,10 +39,20 @@ JOB_NAME="$(printf '%s' "$MODEL" | tr '/:' '__')__$(date -u +%Y-%m-%d__%H-%M-%S)
 
 CLEANUP=1
 HARBOR_ARGS=()
-for arg in "$@"; do
-  case "$arg" in
-    --no-cleanup) CLEANUP=0 ;;
-    *) HARBOR_ARGS+=("$arg") ;;
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --no-cleanup)
+      CLEANUP=0
+      shift
+      ;;
+    -p|--path)
+      TASK_PATH="$2"
+      shift 2
+      ;;
+    *)
+      HARBOR_ARGS+=("$1")
+      shift
+      ;;
   esac
 done
 
@@ -50,7 +64,7 @@ fi
 # against the interpreter's own path rather than the task directory. The world's
 # package comes along for the ride so the agent can read the named operator
 # prompts out of the environment's contract instead of restating them.
-export PYTHONPATH="$TASK_PATH:$TASK_PATH/environment${PYTHONPATH:+:$PYTHONPATH}"
+export PYTHONPATH="$TASK_PATH:$SCRIPT_DIR:$SCRIPT_DIR/environment${PYTHONPATH:+:$PYTHONPATH}"
 
 # Credentials are needed only by the providers that have accounts. The default
 # is Ollama, which has none, so a missing .env is not an error until something
@@ -66,7 +80,6 @@ case "$MODEL" in
   ollama/*|ollama) NEEDS_KEY="" ;;
   openrouter/*)    NEEDS_KEY="OPEN_ROUTER_KEY" ;;
   anthropic/*)     NEEDS_KEY="ANTHROPIC_API_KEY" ;;
-  openai/*)        NEEDS_KEY="OPENAI_API_KEY" ;;
   *)               NEEDS_KEY="" ;;
 esac
 

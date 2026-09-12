@@ -14,10 +14,10 @@ Developed by [Mostofa Shakib](https://www.mostofashakib.com).
 
 | Environment | Mode | Difficulty | What the agent must do |
 |---|---|---|---|
-| [`gmail/`](gmail/) | **Headless** (CLI / FastMCP) | Medium | Triage incoming mailbox communications: search and flag critical invoice notices with star and importance flags, archive delivery notices, and prepare confirmation drafts via native CLI and MCP tools. |
-| [`gmail-ui/`](gmail-ui/) | **Full UI** (Next.js / Web) | Medium | Identical email triage environment with an interactive Next.js web application frontend and REST API for human visual inspection, browser-use agents, and multimodal evaluation. |
-| [`slack/`](slack/) | **Headless** (CLI / FastMCP) | Hard | Drive a live enterprise system cutover through staged reviews. Approving one revision releases the next, evidence only arrives after the action that triggers it, and a late rehearsal can invalidate readiness already established. |
-| [`task_manager/`](task_manager/) | **Headless** (CLI / FastMCP) | Medium | Take over a departing teammate's task queue: discover the full set, branch each record on its own fields, append labels without clobbering existing ones, and touch nothing outside scope. |
+| [`gmail/`](gmail/) | **Headless** (CLI / FastMCP) | Hard | Triage vendor compromise disclosure and targeted spear-phishing: uncover critical API credential leak (`KEY_PROD_SEC_8821`), quarantine deceptive phishing vectors to trash/spam, enforce legal compliance holds, and draft multi-stakeholder formal regulatory disclosures and executive briefings. |
+| [`gmail-ui/`](gmail-ui/) | **Full UI** (Next.js / Web) | Hard | Full-featured interactive Next.js web application frontend and REST API for the email incident triage environment, suitable for human visual inspection, browser-use agents, and multimodal evaluation. |
+| [`slack/`](slack/) | **Headless** (CLI / FastMCP) | Hard | Drive an enterprise Acme migration cutover through staged reviews in `#debugging`: discover unstated blockers, verify cross-border data integrity and latency bounds, resolve circular dependencies, and submit a defensible go/no-go readiness assessment. |
+| [`task_manager/`](task_manager/) | **Headless** (CLI / FastMCP) | Hard | Reconcile release candidate deployment blockers across 55 tasks: uncover circular dependencies, reassign overloaded engineers, verify compliance and migration gating, and submit an auditable sign-off report without disturbing stable tasks. |
 
 Each directory is a fully self-contained environment — `task.toml`, Docker environment, reference solution, test suites, and layered verifiers. There is no shared package between them.
 
@@ -59,24 +59,23 @@ No API key is required by default. To use a hosted model, add credentials to a `
 harbor run -p ./task_manager -a oracle
 harbor run -p ./slack -a oracle
 harbor run -p ./gmail -a oracle
-harbor run -p ./gmail-ui -a oracle
 
 # Run with a local model (Ollama by default)
 ./task_manager/run.sh
 ./slack/run.sh
 ./gmail/run.sh
-./gmail-ui/run.sh
-
-# Inspect results in Harbor interactive viewer
-./task_manager/view.sh
-./slack/view.sh
-./gmail/view.sh
-./gmail-ui/view.sh
 
 # Stop all Harbor processes, containers, and viewer ports for a task
 ./task_manager/kill.sh
 ./slack/kill.sh
 ./gmail/kill.sh
+```
+
+For the visual interface variant of Gmail (`gmail-ui`):
+```bash
+# Full-UI Gmail run (interactive web app at http://localhost:3000)
+harbor run -p ./gmail-ui -a oracle
+./gmail-ui/run.sh
 ./gmail-ui/kill.sh
 ```
 
@@ -85,7 +84,6 @@ All environments ship a provider-agnostic agent. Ollama is the default because i
 ```bash
 MODEL=ollama/gemma4:26b ./task_manager/run.sh
 MODEL=ollama/qwen3.6:35b ./gmail/run.sh
-MODEL=ollama/qwen3.6:35b ./gmail-ui/run.sh
 MODEL=openrouter/anthropic/claude-opus-5 ./slack/run.sh
 
 # Run without Harbor — a throwaway local workspace + real verifier

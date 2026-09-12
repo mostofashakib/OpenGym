@@ -180,3 +180,182 @@ def evaluate_triage_task(
     )
 
     return checks
+
+
+def evaluate_compromise_triage_task(
+    client: Any | None = None,
+    state_data: dict[str, Any] | None = None,
+) -> list[CheckOutcome]:
+    """Evaluate whether the incident compromise triage operations were performed."""
+    state = _load_state(client, state_data)
+    if state is None:
+        return [
+            CheckOutcome(
+                name="state_fetchable",
+                passed=False,
+                detail={"error": "Could not retrieve state from client, export file, or database"},
+                weight=1.0,
+            )
+        ]
+
+    messages = state.get("messages", [])
+    drafts_list = state.get("drafts", [])
+    if not drafts_list and client is not None:
+        try:
+            drafts_res = client.tool_list_drafts()
+            drafts_list = drafts_res.get("result", {}).get("drafts", [])
+        except Exception:
+            pass
+    if not drafts_list:
+        drafts_list = [m for m in messages if "DRAFTS" in (m.get("labelIds") or [])]
+
+    # Check 1: Critical vendor breach disclosure flagged, starred, important, and read
+    breach_msgs = [
+        m for m in messages
+        if "datapipe" in (m.get("sender") or "").lower()
+        or "KEY_PROD_SEC_8821" in (m.get("snippet") or "")
+        or "security advisory" in (m.get("subject") or "").lower()
+    ]
+    breach_flagged = False
+    if breach_msgs:
+        breach_flagged = any(
+            m.get("isStarred") and m.get("isImportant") and m.get("isRead")
+            and ("important" in (m.get("labelIds") or []) or "work" in (m.get("labelIds") or []) or "INBOX" in (m.get("labelIds") or []))
+            for m in breach_msgs
+        )
+
+    checks = [
+        CheckOutcome(
+            name="vendor_exposure_flagged",
+            passed=breach_flagged,
+            detail={"found_candidates": len(breach_msgs), "flagged": breach_flagged},
+            weight=1.0,
+        )
+    ]
+
+    # Check 2: Deceptive phishing email quarantined to trash and marked spam
+    phish_msgs = [
+        m for m in messages
+        if "cloudinfra-support.co" in (m.get("sender") or "").lower()
+        or "cloudinfra-support.co" in (m.get("snippet") or "")
+        or "immediate mfa reset" in (m.get("subject") or "").lower()
+    ]
+    phish_quarantined = False
+    if phish_msgs:
+        phish_quarantined = any(
+            m.get("isTrash") or "TRASH" in (m.get("labelIds") or []) or "SPAM" in (m.get("labelIds") or [])
+            for m in phish_msgs
+        )
+
+    checks.append(
+        CheckOutcome(
+            name="phishing_quarantined",
+            passed=phish_quarantined,
+            detail={"found_candidates": len(phish_msgs), "quarantined": phish_quarantined},
+            weight=1.0,
+        )
+    )
+
+    # Check 3: Legal inquiry held in inbox and starred
+    legal_msgs = [
+        m for m in messages
+        if "legal-counsel@company.com" in (m.get("sender") or "").lower()
+        or "regulatory disclosure" in (m.get("subject") or "").lower()
+    ]
+    legal_held = False
+    if legal_msgs:
+        legal_held = any(
+            (not m.get("isTrash"))
+            and (not m.get("isArchived"))
+            and m.get("isStarred")
+            for m in legal_msgs
+        )
+
+    checks.append(
+        CheckOutcome(
+            name="legal_inquiry_held",
+            passed=legal_held,
+            detail={"found_candidates": len(legal_msgs), "held": legal_held},
+            weight=1.0,
+        )
+    )
+
+    # Check 4: Formal legal disclosure draft created citing compromised key and service
+    legal_draft_ok = any(
+        any("legal-counsel@company.com" in addr.lower() for addr in d.get("to", []))
+        and ("disclosure" in (d.get("subject") or "").lower() or "datapipe" in (d.get("subject") or "").lower())
+        and "KEY_PROD_SEC_8821" in (d.get("body") or d.get("text") or d.get("snippet") or "")
+        and "datapipe" in (d.get("body") or d.get("text") or d.get("snippet") or "").lower()
+        for d in drafts_list
+    )
+
+    checks.append(
+        CheckOutcome(
+            name="legal_disclosure_draft_created",
+            passed=legal_draft_ok,
+            detail={"drafts_count": len(drafts_list), "matched": legal_draft_ok},
+            weight=1.0,
+        )
+    )
+
+    # Check 5: Executive containment briefing draft created for VP of Engineering
+    exec_draft_ok = any(
+        any("vp-eng@company.com" in addr.lower() for addr in d.get("to", []))
+        and ("briefing" in (d.get("subject") or "").lower() or "incident" in (d.get("subject") or "").lower() or "containment" in (d.get("subject") or "").lower())
+        and any(term in (d.get("body") or d.get("text") or d.get("snippet") or "").lower() for term in ("datapipe", "containment", "revocation", "cloudinfra"))
+        for d in drafts_list
+    )
+
+    checks.append(
+        CheckOutcome(
+            name="exec_briefing_draft_created",
+            passed=exec_draft_ok,
+            detail={"drafts_count": len(drafts_list), "matched": exec_draft_ok},
+            weight=1.0,
+        )
+    )
+
+    # Check 6: Routine noise emails archived out of active inbox
+    noise_msgs = [
+        m for m in messages
+        if "shipping" in (m.get("subject") or "").lower()
+        or "delivery notice" in (m.get("subject") or "").lower()
+        or "[pass] ci build" in (m.get("subject") or "").lower()
+        or "techtrends weekly" in (m.get("subject") or "").lower()
+    ]
+    archived_count = sum(
+        1 for m in noise_msgs
+        if m.get("isArchived") or "ARCHIVE" in (m.get("labelIds") or []) or "INBOX" not in (m.get("labelIds") or [])
+    )
+    noise_archived = archived_count >= 3
+
+    checks.append(
+        CheckOutcome(
+            name="noise_emails_archived",
+            passed=noise_archived,
+            detail={"noise_count": len(noise_msgs), "archived_count": archived_count},
+            weight=1.0,
+        )
+    )
+
+    # Check 7: Scope cleanliness - legitimate threads are untouched/retained
+    trashed = [m for m in messages if m.get("isTrash") or "TRASH" in (m.get("labelIds") or [])]
+    spammed = [m for m in messages if "SPAM" in (m.get("labelIds") or [])]
+    bad_destructions = [
+        m.get("id") for m in (trashed + spammed)
+        if "cloudinfra-support.co" not in (m.get("sender") or "").lower()
+        and "mfa reset" not in (m.get("subject") or "").lower()
+    ]
+    clean_scope = len(bad_destructions) == 0
+
+    checks.append(
+        CheckOutcome(
+            name="scope_cleanliness",
+            passed=clean_scope,
+            detail={"bad_destructions": bad_destructions, "total_trashed": len(trashed)},
+            weight=0.5,
+        )
+    )
+
+    return checks
+

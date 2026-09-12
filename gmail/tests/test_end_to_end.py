@@ -92,6 +92,96 @@ class TestEndToEnd(unittest.TestCase):
         for check in evaluation.checks:
             self.assertTrue(check.passed, f"Check {check.name} failed unexpectedly")
 
+    def test_compromise_triage_oracle_full_reward(self) -> None:
+        """The incident compromise triage reference oracle must complete all instructions and score 1.000."""
+        # 1. Star, prioritize, and read DataPipe breach disclosure
+        inbox_msgs = execute_tool(self.db_path, "list_emails", {"folder": "inbox"})["messages"]
+        breach = next(
+            m for m in inbox_msgs
+            if "datapipe" in (m["sender"] or "").lower() or "KEY_PROD_SEC_8821" in (m.get("snippet") or "")
+        )
+        execute_tool(
+            self.db_path,
+            "update_email",
+            {"id": breach["id"], "isStarred": True, "isImportant": True, "isRead": True, "addLabels": ["important"]},
+        )
+
+        # 2. Quarantine phishing message to trash and spam
+        phish = next(
+            m for m in inbox_msgs
+            if "cloudinfra-support.co" in (m["sender"] or "").lower() or "mfa reset" in (m["subject"] or "").lower()
+        )
+        execute_tool(
+            self.db_path,
+            "update_email",
+            {"id": phish["id"], "isTrash": True, "addLabels": ["SPAM"]},
+        )
+
+        # 3. Hold and star legal inquiry
+        legal = next(
+            m for m in inbox_msgs
+            if "legal-counsel@company.com" in (m["sender"] or "").lower()
+        )
+        execute_tool(
+            self.db_path,
+            "update_email",
+            {"id": legal["id"], "isStarred": True},
+        )
+
+        # 4. Draft formal regulatory disclosure to legal counsel
+        execute_tool(
+            self.db_path,
+            "create_draft",
+            {
+                "to": ["legal-counsel@company.com"],
+                "subject": "Formal Incident Disclosure: DataPipe Ingestion API Compromise",
+                "body": "Formal disclosure regarding exposed key KEY_PROD_SEC_8821 on DataPipe Ingestion API.",
+            },
+        )
+
+        # 5. Draft executive incident briefing for VP of Engineering
+        execute_tool(
+            self.db_path,
+            "create_draft",
+            {
+                "to": ["vp-eng@company.com"],
+                "subject": "Executive Incident Briefing: Upstream Vendor Containment",
+                "body": "Briefing on containment of DataPipe key leak and phishing quarantine.",
+            },
+        )
+
+        # 6. Archive routine noise emails (shipping, CI, newsletter)
+        for m in inbox_msgs:
+            sender = (m.get("sender") or "").lower()
+            subject = (m.get("subject") or "").lower()
+            if any(k in sender for k in ("shipping@logistics.net", "devops-alerts", "newsletter")) or \
+               any(k in subject for k in ("shipping notice", "delivery notice", "[pass] ci build", "techtrends weekly")):
+                execute_tool(self.db_path, "update_email", {"id": m["id"], "isArchived": True})
+
+        # 7. Submit task report
+        execute_tool(
+            self.db_path,
+            "submit_task",
+            {
+                "summary": "Completed incident compromise triage: verified and quarantined DataPipe key KEY_PROD_SEC_8821 disclosure, blacklisted phishing email, held legal inquiry and drafted disclosure.",
+                "affected_message_ids": [breach["id"], phish["id"], legal["id"]],
+            },
+        )
+
+        # Verify episode reward
+        with get_connection(self.db_path) as conn:
+            state = export_state(conn)
+
+        evaluation = evaluate_episode(state_data=state, task_name="incident-compromise-triage")
+        self.assertTrue(evaluation.passed)
+        self.assertEqual(evaluation.reward, 1.0)
+        self.assertTrue(evaluation.valid)
+        self.assertEqual(len(evaluation.penalties), 0)
+
+        for check in evaluation.checks:
+            self.assertTrue(check.passed, f"Check {check.name} failed unexpectedly")
+
+
     # -------------------------------------------------------------------------
     # 2. Agent with Ollama Provider Test
     # -------------------------------------------------------------------------

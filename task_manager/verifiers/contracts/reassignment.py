@@ -28,6 +28,7 @@ from task_sim.seed import (
     MILESTONE_SUCCESSOR,
     MILESTONE_TASKS,
     REASSIGNED_TASKS,
+    REASSIGNMENT_TASKS,
     TRACKER_TASKS,
     TRIAGE_LABEL,
     UNMILESTONED_SUCCESSOR,
@@ -53,7 +54,7 @@ from verifiers.episode import Episode
 CONTRACT_NAME = "task-manager-reassignment"
 
 #: The seed, indexed for the checks that ask what a field used to hold.
-_SEED = {row[0]: row for row in TRACKER_TASKS}
+_SEED = {row[0]: row for row in REASSIGNMENT_TASKS}
 _SEED_STATUS = {task_id: row[5] for task_id, row in _SEED.items()}
 _SEED_PROJECT = {task_id: row[6] for task_id, row in _SEED.items()}
 _SEED_MILESTONE = {task_id: row[7] for task_id, row in _SEED.items()}

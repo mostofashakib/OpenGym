@@ -24,7 +24,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 ENV_FILE="$REPO_ROOT/.env"
 
-TASK_NAME="${TASK:-vendor-renewals-triage}"
+TASK_NAME="${TASK:-incident-compromise-triage}"
 TASK_PATH="${TASK_PATH:-$SCRIPT_DIR/tasks/$TASK_NAME}"
 AGENT="${AGENT:-agent.harbor_agent:GmailAgent}"
 MODEL="${MODEL:-ollama/qwen3.6:35b}"

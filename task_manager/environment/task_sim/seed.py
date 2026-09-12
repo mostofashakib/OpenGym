@@ -21,12 +21,16 @@ from task_sim.scenario import Scenario
 # ---------------------------------------------------------------------------
 
 TRACKER_USERS = [
-    ("U001", "Avery Chen",   "avery@example.local",  "admin",  "research",    "avery"),
-    ("U002", "Morgan Patel", "morgan@example.local", "member", "product",     "morgan"),
-    ("U003", "Riley Stone",  "riley@example.local",  "member", "engineering", "riley"),
-    ("U004", "Jordan Kim",   "jordan@example.local", "member", "design",      "jordan"),
-    ("U005", "Sam Wu",       "sam@example.local",    "member", "platform",    "sam"),
-    ("U006", "Alex Rivera",  "alex@example.local",   "admin",  "engineering", "alex"),
+    ("U001", "Avery Chen",    "avery@example.local",   "admin",  "research",    "avery"),
+    ("U002", "Morgan Patel",  "morgan@example.local",  "member", "product",     "morgan"),
+    ("U003", "Riley Stone",   "riley@example.local",   "member", "engineering", "riley"),
+    ("U004", "Jordan Kim",    "jordan@example.local",  "member", "design",      "jordan"),
+    ("U005", "Sam Wu",        "sam@example.local",     "member", "platform",    "sam"),
+    ("U006", "Alex Rivera",   "alex@example.local",    "admin",  "engineering", "alex"),
+    ("U007", "Elena Rostova", "elena@example.local",   "member", "sre",         "elena"),
+    ("U008", "Marcus Vance",  "marcus@example.local",  "member", "security",    "marcus"),
+    ("U009", "Priya Sharma",  "priya@example.local",   "admin",  "release",     "priya"),
+    ("U010", "Devon Reed",    "devon@example.local",   "member", "qa",          "devon"),
 ]
 
 # ---------------------------------------------------------------------------
@@ -34,10 +38,11 @@ TRACKER_USERS = [
 # ---------------------------------------------------------------------------
 
 TRACKER_PROJECTS = [
-    ("P001", "ML Platform v2",          "Next-gen ML training and serving infrastructure.",   "U001", 1, False),
-    ("P002", "Agent Eval Framework",    "Deterministic evaluation framework for LLM agents.", "U002", 2, False),
-    ("P003", "Infrastructure Overhaul", "Platform reliability and scalability improvements.", "U006", 3, False),
-    ("P004", "Product Dashboard",       "User-facing analytics and reporting dashboard.",     "U002", 4, False),
+    ("P001", "ML Platform v2",          "Next-gen ML compute and serving infrastructure.",                     "U001", 1, False),
+    ("P002", "Agent Eval Framework",    "Deterministic evaluation framework for LLM agents.",                  "U002", 2, False),
+    ("P003", "Infrastructure Overhaul", "Platform reliability and scalability improvements.",                  "U006", 3, False),
+    ("P004", "Product Dashboard",       "User-facing analytics and reporting dashboard.",                      "U002", 4, False),
+    ("P005", "Titanium Enterprise v3.0","Core enterprise platform upgrade with zero-trust auth and cache bus.","U009", 5, False),
 ]
 
 # ---------------------------------------------------------------------------
@@ -45,11 +50,13 @@ TRACKER_PROJECTS = [
 # ---------------------------------------------------------------------------
 
 TRACKER_MILESTONES = [
-    ("M001", "P001", "Alpha Release",    "First public alpha of ML Platform v2.",                  START_MS + 60 * ONE_DAY_MS, 5),
-    ("M002", "P001", "Beta Release",     "Feature-complete beta with performance baseline.",       START_MS + 90 * ONE_DAY_MS, 6),
-    ("M003", "P002", "v1.0 Launch",      "Production-ready eval framework release.",               START_MS + 45 * ONE_DAY_MS, 7),
-    ("M004", "P003", "Phase 1 Complete", "Core infrastructure hardening -- already overdue.",      START_MS -  5 * ONE_DAY_MS, 8),
-    ("M005", "P004", "Q1 Goals",         "All Q1 product deliverables shipped -- already overdue.", START_MS - 10 * ONE_DAY_MS, 9),
+    ("M001", "P001", "Alpha Release",       "First public alpha of ML Platform v2.",                  START_MS + 60 * ONE_DAY_MS, 5),
+    ("M002", "P001", "Beta Release",        "Feature-complete beta with performance baseline.",       START_MS + 90 * ONE_DAY_MS, 6),
+    ("M003", "P002", "v1.0 Launch",         "Production-ready eval framework release.",               START_MS + 45 * ONE_DAY_MS, 7),
+    ("M004", "P003", "Phase 1 Complete",    "Core infrastructure hardening -- already overdue.",      START_MS -  5 * ONE_DAY_MS, 8),
+    ("M005", "P004", "Q1 Goals",            "All Q1 product deliverables shipped -- already overdue.", START_MS - 10 * ONE_DAY_MS, 9),
+    ("M006", "P005", "v3.0 Cutover Gate",   "Release blocker gate for enterprise production cutover.", START_MS +  2 * ONE_DAY_MS, 10),
+    ("M007", "P005", "v3.1 Post-Launch",    "Follow-up enhancements and non-critical refactors.",      START_MS + 30 * ONE_DAY_MS, 11),
 ]
 
 # ---------------------------------------------------------------------------
@@ -74,7 +81,7 @@ TRACKER_TASKS = [
     ),
     (
         "TASK006", "Write API documentation",
-        "Document all REST endpoints in OpenAPI format.",
+        "Document all REST endpoints in standard API schema format.",
         "U002", "U004", "PENDING",
         "P002", "M003", None, "LOW", ("docs",), 6,
     ),
@@ -116,8 +123,8 @@ TRACKER_TASKS = [
         "P001", "M001", None, "URGENT", ("backend", "database"), 4,
     ),
     (
-        "TASK010", "ML model training pipeline",
-        "Build distributed training pipeline with checkpointing.",
+        "TASK010", "ML model pipeline",
+        "Build distributed processing pipeline with checkpointing.",
         "U001", "U003", "PENDING",
         "P001", "M001", None, "URGENT", ("ml", "backend"), 10,
     ),
@@ -260,6 +267,145 @@ TRACKER_TASKS = [
         "U001", None, "PENDING",
         None, None, None, "LOW", ("admin",), 30,
     ),
+    # -- Titanium Enterprise v3.0 (P005) ------------------------------------
+    (
+        "TASK033", "Titanium v3 release blocker triage",
+        "Audit all cutover blockers across security, SRE, and platform before production deployment.",
+        "U009", "U009", "IN_PROGRESS",
+        "P005", "M006", START_MS + 1 * ONE_DAY_MS, "URGENT", ("release", "cutover"), 33,
+    ),
+    (
+        "TASK034", "Audit TLS 1.3 cipher suites",
+        "Verify cipher suite negotiation and deprecate legacy CBC modes across gateway ingresses.",
+        "U008", "U008", "COMPLETED",
+        "P005", "M006", None, "HIGH", ("security",), 34,
+    ),
+    (
+        "TASK035", "SOC2 compliance audit gate",
+        "Final compliance audit signoff. Blocked on third-party vendor security attestation (TASK047).",
+        "U008", "U008", "BLOCKED",
+        "P005", "M006", START_MS + 1 * ONE_DAY_MS, "URGENT", ("compliance", "security"), 35,
+    ),
+    (
+        "TASK036", "Distributed cache invalidation",
+        "Fix distributed cache cluster invalidation bus and connection pool eviction.",
+        "U007", "U007", "IN_PROGRESS",
+        "P005", "M006", None, "HIGH", ("sre", "cache"), 36,
+    ),
+    (
+        "TASK037", "Database schema migration v3",
+        "Execute zero-downtime partitioning and index migration on production customer tables.",
+        "U003", "U003", "COMPLETED",
+        "P005", "M006", None, "URGENT", ("database",), 37,
+    ),
+    (
+        "TASK038", "Pre-cutover data replication check",
+        "Verify cross-region read replica lag remains below 10ms during burst traffic.",
+        "U007", "U007", "BLOCKED",
+        "P005", "M006", START_MS + 2 * ONE_DAY_MS, "HIGH", ("sre", "database"), 38,
+    ),
+    (
+        "TASK039", "Zero-trust session token revocation",
+        "Implement instantaneous token revocation on tenant privilege boundary changes.",
+        "U005", "U005", "IN_PROGRESS",
+        "P005", "M006", None, "HIGH", ("security", "auth"), 39,
+    ),
+    (
+        "TASK040", "Staging end-to-end integration suite",
+        "Run comprehensive integration suite in pre-production staging environment.",
+        "U010", "U010", "BLOCKED",
+        "P005", "M006", START_MS + 2 * ONE_DAY_MS, "HIGH", ("qa", "release"), 40,
+    ),
+    (
+        "TASK041", "Canary deployment pipeline",
+        "Configure automated canary analysis with 1% traffic step-up and rollback triggers.",
+        "U007", "U007", "COMPLETED",
+        "P005", "M006", None, "HIGH", ("infra", "devops"), 41,
+    ),
+    (
+        "TASK042", "Token revocation race condition under load",
+        "Concurrency race condition detected during simultaneous refresh and revoke requests.",
+        "U009", "U005", "PENDING",
+        "P005", "M006", None, "HIGH", ("bug", "auth"), 42,
+    ),
+    (
+        "TASK043", "Backup verification and recovery drill",
+        "Execute simulated disaster recovery failover drill using production snapshot copies.",
+        "U007", "U007", "BLOCKED",
+        "P005", "M006", START_MS + 1 * ONE_DAY_MS, "URGENT", ("sre", "dr"), 43,
+    ),
+    (
+        "TASK044", "Snapshot rollback automation script",
+        "Build idempotent rollback automation script for instant volume restores.",
+        "U007", "U007", "BLOCKED",
+        "P005", "M006", None, "URGENT", ("sre", "automation"), 44,
+    ),
+    (
+        "TASK045", "Customer maintenance notification banner",
+        "Publish schedule maintenance banner on customer support portal and status page.",
+        "U002", "U002", "COMPLETED",
+        "P005", "M006", None, "LOW", ("product",), 45,
+    ),
+    (
+        "TASK046", "API gateway rate limiter sync",
+        "Synchronize Redis sliding window rate limits across multi-region edge gateways.",
+        "U003", "U003", "PENDING",
+        "P005", "M006", None, "MEDIUM", ("backend", "network"), 46,
+    ),
+    (
+        "TASK047", "Third-party vendor security attestation",
+        "Collect independent SOC2 Type II audit report and penetration testing attestation.",
+        "U008", "U008", "COMPLETED",
+        "P005", "M006", None, "HIGH", ("security", "audit"), 47,
+    ),
+    (
+        "TASK048", "Disaster recovery runbook validation",
+        "Peer review and operational validation of cutover and rollback step-by-step procedures.",
+        "U009", "U009", "BLOCKED",
+        "P005", "M006", None, "HIGH", ("runbook", "release"), 48,
+    ),
+    (
+        "TASK049", "Telemetry dashboard alerting rules",
+        "Set up PromQL alerting rules for P99 latency, error rate spikes, and pod restarts.",
+        "U007", "U007", "COMPLETED",
+        "P005", "M006", None, "MEDIUM", ("infra", "observability"), 49,
+    ),
+    (
+        "TASK050", "Load balancer healthcheck tuning",
+        "Tune keep-alive timeout and health check threshold for zero connection drops.",
+        "U005", "U005", "COMPLETED",
+        "P005", "M006", None, "LOW", ("infra",), 50,
+    ),
+    (
+        "TASK051", "Redis connection pool timeout spike",
+        "Intermittent connection timeout exceptions observed in cache cluster during load bursts.",
+        "U007", "U007", "PENDING",
+        "P005", "M006", None, "HIGH", ("bug", "cache"), 51,
+    ),
+    (
+        "TASK052", "Cache cluster pool exhaustion bug",
+        "QA discovered pool exhaustion causing 504 gateway timeouts under simulated traffic.",
+        "U003", "U003", "PENDING",
+        "P005", "M006", None, "HIGH", ("bug", "cache"), 52,
+    ),
+    (
+        "TASK053", "Post-release dark launch toggle",
+        "Dark launch feature gate configuration for enterprise reporting dashboard.",
+        "U002", "U002", "PENDING",
+        "P005", "M007", None, "LOW", ("feature-flag",), 53,
+    ),
+    (
+        "TASK054", "Non-critical GraphQL query optimization",
+        "Optimize nested query resolution for tenant settings page.",
+        "U003", "U003", "PENDING",
+        "P005", "M007", None, "LOW", ("backend", "perf"), 54,
+    ),
+    (
+        "TASK055", "Update user onboarding tour copy",
+        "Refresh in-app guide text and tooltips for updated enterprise navigation layout.",
+        "U002", "U002", "PENDING",
+        "P005", "M007", None, "LOW", ("ux", "docs"), 55,
+    ),
 ]
 
 # ---------------------------------------------------------------------------
@@ -291,6 +437,29 @@ TRACKER_ASSIGNMENTS = [
     ("ASSIGN022", "TASK029", "U003", "U002", 30),
     ("ASSIGN023", "TASK031", "U004", "U004", 31),
     ("ASSIGN024", "TASK032", "U004", "U004", 32),
+    ("ASSIGN025", "TASK033", "U009", "U009", 33),
+    ("ASSIGN026", "TASK034", "U008", "U008", 34),
+    ("ASSIGN027", "TASK035", "U008", "U008", 35),
+    ("ASSIGN028", "TASK036", "U007", "U007", 36),
+    ("ASSIGN029", "TASK037", "U003", "U003", 37),
+    ("ASSIGN030", "TASK038", "U007", "U007", 38),
+    ("ASSIGN031", "TASK039", "U005", "U005", 39),
+    ("ASSIGN032", "TASK040", "U010", "U010", 40),
+    ("ASSIGN033", "TASK041", "U007", "U007", 41),
+    ("ASSIGN034", "TASK042", "U005", "U009", 42),
+    ("ASSIGN035", "TASK043", "U007", "U007", 43),
+    ("ASSIGN036", "TASK044", "U007", "U007", 44),
+    ("ASSIGN037", "TASK045", "U002", "U002", 45),
+    ("ASSIGN038", "TASK046", "U003", "U003", 46),
+    ("ASSIGN039", "TASK047", "U008", "U008", 47),
+    ("ASSIGN040", "TASK048", "U009", "U009", 48),
+    ("ASSIGN041", "TASK049", "U007", "U007", 49),
+    ("ASSIGN042", "TASK050", "U005", "U005", 50),
+    ("ASSIGN043", "TASK051", "U007", "U007", 51),
+    ("ASSIGN044", "TASK052", "U003", "U003", 52),
+    ("ASSIGN045", "TASK053", "U002", "U002", 53),
+    ("ASSIGN046", "TASK054", "U003", "U003", 54),
+    ("ASSIGN047", "TASK055", "U002", "U002", 55),
 ]
 
 # ---------------------------------------------------------------------------
@@ -312,6 +481,14 @@ TRACKER_DEPENDENCIES = [
     ("DEP011", "TASK018", "TASK009"),   # onboarding flow needs wireframes
     ("DEP012", "TASK028", "TASK005"),   # rate limiting needs auth service
     ("DEP013", "TASK029", "TASK002"),   # API contracts need schema review
+    ("DEP014", "TASK038", "TASK037"),   # replication check needs schema migration
+    ("DEP015", "TASK038", "TASK036"),   # replication check needs cache invalidation
+    ("DEP016", "TASK035", "TASK047"),   # SOC2 gate needs vendor attestation
+    ("DEP017", "TASK040", "TASK039"),   # staging suite needs token revocation
+    ("DEP018", "TASK043", "TASK044"),   # recovery drill needs rollback script
+    ("DEP019", "TASK044", "TASK048"),   # CIRCULAR: rollback script depends on runbook validation
+    ("DEP020", "TASK048", "TASK044"),   # CIRCULAR: runbook validation depends on rollback script
+    ("DEP021", "TASK040", "TASK042"),   # staging suite blocked by race condition
 ]
 
 
@@ -414,3 +591,93 @@ REASSIGNMENT_SCENARIO = Scenario(
     rules=REASSIGNMENT_RULES,
     observation_only=tuple(event.event_id for event in REASSIGNMENT_EVENTS),
 )
+
+# ---------------------------------------------------------------------------
+# Titanium v3 Enterprise Release Reconciliation Scenario
+# ---------------------------------------------------------------------------
+
+RELEASE_PROJECT = "P005"
+CUTOVER_MILESTONE = "M006"
+AUDIT_TASKS = (
+    "TASK033", "TASK034", "TASK035", "TASK036", "TASK037", "TASK038",
+    "TASK039", "TASK040", "TASK041", "TASK042", "TASK043", "TASK044",
+    "TASK045", "TASK046", "TASK047", "TASK048", "TASK049", "TASK050",
+    "TASK051", "TASK052",
+)
+RECONCILIATION_TARGET_TASKS = ("TASK035", "TASK042", "TASK044", "TASK048", "TASK051", "TASK052")
+
+RELEASE_RECONCILIATION_EVENTS = (
+    ScenarioEvent("release_audit_inspected", "The agent enumerated and inspected Titanium v3 cutover tasks."),
+    ScenarioEvent("circular_dep_broken", "The circular dependency between TASK048 and TASK044 was unlinked."),
+    ScenarioEvent("task048_completed", "Disaster recovery runbook validation (TASK048) was marked COMPLETED."),
+    ScenarioEvent("task044_completed", "Snapshot rollback automation script (TASK044) was marked COMPLETED."),
+    ScenarioEvent("compliance_unblocked", "SOC2 compliance audit gate (TASK035) was marked COMPLETED after verifying vendor attestation."),
+    ScenarioEvent("race_reassigned", "Token revocation race condition (TASK042) was assigned to Marcus Vance (U008) with URGENT priority."),
+    ScenarioEvent("task051_deduplicated", "TASK051 was marked duplicate of TASK036."),
+    ScenarioEvent("task052_deduplicated", "TASK052 was marked duplicate of TASK036."),
+    ScenarioEvent("handover_reported", "The agent submitted a structured release blocker reconciliation report."),
+    ScenarioEvent("reconciliation_complete", "All Titanium v3 cutover blockers were reconciled."),
+)
+
+RELEASE_RECONCILIATION_RULES = (
+    ScenarioRule(
+        "rel_r010_audit", "release_audit_inspected", "observed",
+        observed_ids=("TASK033", "TASK035", "TASK044", "TASK048"),
+    ),
+    ScenarioRule(
+        "rel_r020_unlink", "circular_dep_broken", "tool_called",
+        tools=("unlink_tasks",),
+    ),
+    ScenarioRule(
+        "rel_r030_task048", "task048_completed", "field_equals",
+        table="tasks", row_id="TASK048", field="status", value="COMPLETED",
+    ),
+    ScenarioRule(
+        "rel_r031_task044", "task044_completed", "field_equals",
+        table="tasks", row_id="TASK044", field="status", value="COMPLETED",
+    ),
+    ScenarioRule(
+        "rel_r032_task035", "compliance_unblocked", "field_equals",
+        table="tasks", row_id="TASK035", field="status", value="COMPLETED",
+    ),
+    ScenarioRule(
+        "rel_r033_task042", "race_reassigned", "field_equals",
+        table="tasks", row_id="TASK042", field="assignee_id", value="U008",
+    ),
+    ScenarioRule(
+        "rel_r034_task051", "task051_deduplicated", "field_equals",
+        table="tasks", row_id="TASK051", field="status", value="DUPLICATE",
+    ),
+    ScenarioRule(
+        "rel_r035_task052", "task052_deduplicated", "field_equals",
+        table="tasks", row_id="TASK052", field="status", value="DUPLICATE",
+    ),
+    ScenarioRule(
+        "rel_r040_report", "handover_reported", "tool_called",
+        tools=("submit_handover_report",),
+    ),
+    ScenarioRule(
+        "rel_r050_complete", "reconciliation_complete", "all_of",
+        requires_activated=(
+            "release_audit_inspected", "circular_dep_broken",
+            "task048_completed", "task044_completed", "compliance_unblocked",
+            "race_reassigned", "task051_deduplicated", "task052_deduplicated",
+            "handover_reported",
+        ),
+    ),
+)
+
+RELEASE_RECONCILIATION_SCENARIO = Scenario(
+    events=RELEASE_RECONCILIATION_EVENTS,
+    rules=RELEASE_RECONCILIATION_RULES,
+    observation_only=tuple(event.event_id for event in RELEASE_RECONCILIATION_EVENTS),
+)
+
+REASSIGNMENT_USERS = tuple(TRACKER_USERS[:6])
+REASSIGNMENT_PROJECTS = tuple(TRACKER_PROJECTS[:4])
+REASSIGNMENT_MILESTONES = tuple(TRACKER_MILESTONES[:5])
+REASSIGNMENT_TASKS = tuple(row for row in TRACKER_TASKS if int(row[0][4:]) <= 32)
+REASSIGNMENT_ASSIGNMENTS = tuple(row for row in TRACKER_ASSIGNMENTS if int(row[0][6:]) <= 24)
+REASSIGNMENT_DEPENDENCIES = tuple(row for row in TRACKER_DEPENDENCIES if int(row[0][3:]) <= 13)
+
+
