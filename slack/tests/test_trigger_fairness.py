@@ -81,8 +81,10 @@ def test_the_rollback_ask_counts_anywhere_in_the_bridge_channel(root: Path) -> N
     outcome = workspace.reply("CUT002", OPUS_ROLLBACK_ASK)
 
     evaluation = outcome.evaluation("r050_rollback_checked")
-    assert evaluation is not None and evaluation.matched, render_evaluation(evaluation)
+    assert evaluation is not None
+    assert evaluation.matched, render_evaluation(evaluation)
     assert _fired(workspace, "rollback_initially_verified")
+
 
 
 def test_the_rollback_ask_still_counts_in_its_canonical_thread(root: Path) -> None:

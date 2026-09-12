@@ -353,12 +353,15 @@ def label_for(rule_id: str, predicate_name: str) -> str:
     return PREDICATE_LABELS.get(rule_id, {}).get(predicate_name, predicate_name)
 
 
-def render_evaluation(evaluation: RuleEvaluation) -> str:
+def render_evaluation(evaluation: RuleEvaluation | None) -> str:
     """The evaluator's own block, with semantic names for keyword groups."""
+    if evaluation is None:
+        return "<evaluation is None>"
     text = evaluation.render()
     for raw, friendly in PREDICATE_LABELS.get(evaluation.rule_id, {}).items():
         text = text.replace(f"  {raw}:", f"  {friendly}:")
     return text
+
 
 
 def audit(

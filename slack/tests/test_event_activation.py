@@ -410,8 +410,10 @@ def test_asking_nina_directly_now_counts_and_the_trace_says_where_it_landed(root
     )
 
     evaluation = outcome.evaluation("r040_timing_confirmed")
-    assert evaluation is not None and evaluation.matched, render_evaluation(evaluation)
+    assert evaluation is not None
+    assert evaluation.matched, render_evaluation(evaluation)
     assert evaluation.action == "send_dm_message"
+
 
     address = next(p for p in evaluation.predicates if p.name == "address")
     assert address.detail["matched"] == [f"dm:{NINA}"]
