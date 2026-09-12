@@ -59,16 +59,25 @@ No API key is required by default. To use a hosted model, add credentials to a `
 harbor run -p ./task_manager -a oracle
 harbor run -p ./slack -a oracle
 harbor run -p ./gmail -a oracle
+harbor run -p ./gmail-ui -a oracle
 
 # Run with a local model (Ollama by default)
 ./task_manager/run.sh
 ./slack/run.sh
 ./gmail/run.sh
+./gmail-ui/run.sh
+
+# Inspect results in Harbor interactive viewer
+./task_manager/view.sh
+./slack/view.sh
+./gmail/view.sh
+./gmail-ui/view.sh
 
 # Stop all Harbor processes, containers, and viewer ports for a task
 ./task_manager/kill.sh
 ./slack/kill.sh
 ./gmail/kill.sh
+./gmail-ui/kill.sh
 ```
 
 All environments ship a provider-agnostic agent. Ollama is the default because it needs no account and runs fully offline — only the tool calls enter the container. Switching models is a single environment variable:
@@ -76,19 +85,20 @@ All environments ship a provider-agnostic agent. Ollama is the default because i
 ```bash
 MODEL=ollama/gemma4:26b ./task_manager/run.sh
 MODEL=ollama/qwen3.6:35b ./gmail/run.sh
+MODEL=ollama/qwen3.6:35b ./gmail-ui/run.sh
 MODEL=openrouter/anthropic/claude-opus-5 ./slack/run.sh
 
 # Run without Harbor — a throwaway local workspace + real verifier
 cd task_manager && PYTHONPATH=environment:. python3 -m agent --local --grade
 ```
 
-**Benchmark results so far:** `qwen3.6:35b` solves `task_manager/` and `gmail/` at 1.0 and reaches ~0.23 on `slack/` — a meaningful floor that shows the harder task is not trivially solvable.
+**Benchmark results so far:** `qwen3.6:35b` solves `task_manager/`, `gmail/`, and `gmail-ui/` at 1.0 and reaches ~0.23 on `slack/` — a meaningful floor that shows the harder task is not trivially solvable.
 
 ---
 
 ## Tests
 
-No test runner required. Each environment's `tests/test.sh` is its Harbor verifier — running it from a checkout executes the same suites the graded container runs (17 for `slack/`, 13 for `task_manager/`):
+No test runner required. Each environment's `tests/test.sh` is its Harbor verifier — running it from a checkout executes the same suites the graded container runs (17 for `slack/`, 13 for `task_manager/`, 6 for `gmail/` and `gmail-ui/`):
 
 ```bash
 cd task_manager
