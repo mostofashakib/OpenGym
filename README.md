@@ -6,7 +6,7 @@ A collection of deterministic, self-contained reinforcement learning environment
 
 OpenGym is designed for researchers, engineers, and hobbyists who want realistic, graded environments to benchmark agent behavior beyond toy benchmarks.
 
-Developed by [Mostofa Shakib](https://www.mostofashakib.com).
+Developed by [Mostofa Shakib](https://www.mostofashakib.com/).
 
 ---
 
@@ -142,7 +142,3 @@ Or in plain text:
 ## License
 
 MIT
-
----
-
-*Built by [Mostofa Shakib](https://www.mostofashakib.com)*
