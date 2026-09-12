@@ -161,7 +161,7 @@ class Workspace:
 
     def thread_ts(self, channel: str, message_id: str, actor: str = BEN) -> str | None:
         page = execute_tool(self.db, "get_channel_messages", {"channel_id": channel}, actor)
-        for message in page["messages"]:
+        for message in page.get("messages") or []:
             if message["id"] == message_id:
                 return str(message.get("thread_ts") or message["ts"])
         return None
@@ -189,15 +189,17 @@ class Workspace:
             payload: dict[str, Any] = {"channel_id": channel}
             if cursor:
                 payload["cursor"] = cursor
+            page: dict[str, Any]
             try:
                 page = execute_tool(self.db, "get_channel_messages", payload, actor)
             except Exception:  # noqa: BLE001 - not a member is "not visible"
                 page = {"messages": [], "next_cursor": None}
-            for message in page["messages"]:
+            for message in page.get("messages") or []:
                 if message["id"] == message_id:
                     in_history, body = True, message["text"]
                     author = message["user_id"]
-            cursor = page.get("next_cursor")
+            raw_cursor = page.get("next_cursor")
+            cursor = raw_cursor if isinstance(raw_cursor, str) else None
             if not cursor:
                 break
 

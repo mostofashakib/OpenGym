@@ -189,6 +189,7 @@ class Workspace:
             payload: dict[str, Any] = {"channel_id": channel}
             if cursor:
                 payload["cursor"] = cursor
+            page: dict[str, Any]
             try:
                 page = execute_tool(self.db, "get_channel_messages", payload, actor)
             except Exception:  # noqa: BLE001 - not a member is "not visible"
@@ -197,7 +198,8 @@ class Workspace:
                 if message["id"] == message_id:
                     in_history, body = True, message["text"]
                     author = message["user_id"]
-            cursor = page.get("next_cursor")
+            raw_cursor = page.get("next_cursor")
+            cursor = raw_cursor if isinstance(raw_cursor, str) else None
             if not cursor:
                 break
 
