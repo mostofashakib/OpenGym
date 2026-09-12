@@ -2,7 +2,7 @@
 
 > **If you find OpenGym useful, please ⭐ star the repo** — it helps others discover it and keeps the project growing.
 
-A collection of deterministic, self-contained reinforcement learning environments for training and evaluating AI agents. Each environment is a complete world: it ships its own state, tools, verifier, and reward signal — no shared dependencies, no install steps beyond Docker.
+A collection of deterministic, self-contained reinforcement learning environments for evaluating and benchmarking AI agents. Each environment is a complete world: it ships its own state, tools, verifier, and reward signal — no shared dependencies, no install steps beyond Docker.
 
 OpenGym is designed for researchers, engineers, and hobbyists who want realistic, graded environments to benchmark agent behavior beyond toy benchmarks.
 
@@ -12,11 +12,12 @@ Developed by [Mostofa Shakib](https://www.mostofashakib.com).
 
 ## Environments
 
-| Environment | Difficulty | What the agent must do |
-|---|---|---|
-| [`gmail-ui/`](gmail-ui/) | Medium | Triage incoming mailbox communications: search and flag critical invoice notices with star and importance flags, archive delivery notices, and prepare confirmation drafts. |
-| [`slack/`](slack/) | Hard | Drive a live enterprise system cutover through staged reviews. Approving one revision releases the next, evidence only arrives after the action that triggers it, and a late rehearsal can invalidate readiness already established. |
-| [`task_manager/`](task_manager/) | Medium | Take over a departing teammate's task queue: discover the full set, branch each record on its own fields, append labels without clobbering existing ones, and touch nothing outside scope. |
+| Environment | Mode | Difficulty | What the agent must do |
+|---|---|---|---|
+| [`gmail/`](gmail/) | **Headless** (CLI / FastMCP) | Medium | Triage incoming mailbox communications: search and flag critical invoice notices with star and importance flags, archive delivery notices, and prepare confirmation drafts via native CLI and MCP tools. |
+| [`gmail-ui/`](gmail-ui/) | **Full UI** (Next.js / Web) | Medium | Identical email triage environment with an interactive Next.js web application frontend and REST API for human visual inspection, browser-use agents, and multimodal evaluation. |
+| [`slack/`](slack/) | **Headless** (CLI / FastMCP) | Hard | Drive a live enterprise system cutover through staged reviews. Approving one revision releases the next, evidence only arrives after the action that triggers it, and a late rehearsal can invalidate readiness already established. |
+| [`task_manager/`](task_manager/) | **Headless** (CLI / FastMCP) | Medium | Take over a departing teammate's task queue: discover the full set, branch each record on its own fields, append labels without clobbering existing ones, and touch nothing outside scope. |
 
 Each directory is a fully self-contained environment — `task.toml`, Docker environment, reference solution, test suites, and layered verifiers. There is no shared package between them.
 
@@ -57,27 +58,31 @@ No API key is required by default. To use a hosted model, add credentials to a `
 # Deterministic reference run — no model, no key. Scores exactly 1.0.
 harbor run -p ./task_manager -a oracle
 harbor run -p ./slack -a oracle
+harbor run -p ./gmail -a oracle
 
 # Run with a local model (Ollama by default)
 ./task_manager/run.sh
 ./slack/run.sh
+./gmail/run.sh
 
 # Stop all Harbor processes, containers, and viewer ports for a task
 ./task_manager/kill.sh
 ./slack/kill.sh
+./gmail/kill.sh
 ```
 
-Both environments ship a provider-agnostic agent. Ollama is the default because it needs no account and runs fully offline — only the tool calls enter the container. Switching models is a single environment variable:
+All environments ship a provider-agnostic agent. Ollama is the default because it needs no account and runs fully offline — only the tool calls enter the container. Switching models is a single environment variable:
 
 ```bash
 MODEL=ollama/gemma4:26b ./task_manager/run.sh
+MODEL=ollama/qwen3.6:35b ./gmail/run.sh
 MODEL=openrouter/anthropic/claude-opus-5 ./slack/run.sh
 
 # Run without Harbor — a throwaway local workspace + real verifier
 cd task_manager && PYTHONPATH=environment:. python3 -m agent --local --grade
 ```
 
-**Benchmark results so far:** `qwen3:30b` solves `task_manager/` at 1.0 and reaches ~0.23 on `slack/` — a meaningful floor that shows the harder task is not trivially solvable.
+**Benchmark results so far:** `qwen3.6:35b` solves `task_manager/` and `gmail/` at 1.0 and reaches ~0.23 on `slack/` — a meaningful floor that shows the harder task is not trivially solvable.
 
 ---
 
