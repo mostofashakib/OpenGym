@@ -4,6 +4,9 @@ import path from "path"
 const BRIDGE_SCRIPT = path.join(process.cwd(), "scripts", "slack_bridge.py")
 
 export function runSlackBridge(cmd: string, args: string[] = []): Promise<any> {
+  const dbPath = process.env.SLACK_DB || path.join(process.cwd(), "slack.db")
+  const snapshotPath = process.env.SLACK_SNAPSHOT || path.join(process.cwd(), "slack_seed_snapshot.sql")
+
   return new Promise((resolve, reject) => {
     execFile(
       "python3",
@@ -12,6 +15,8 @@ export function runSlackBridge(cmd: string, args: string[] = []): Promise<any> {
         cwd: process.cwd(),
         env: {
           ...process.env,
+          SLACK_DB: dbPath,
+          SLACK_SNAPSHOT: snapshotPath,
           PYTHONPATH: `${path.join(process.cwd(), "environment")}:${process.env.PYTHONPATH || ""}`,
         },
         timeout: 10000,

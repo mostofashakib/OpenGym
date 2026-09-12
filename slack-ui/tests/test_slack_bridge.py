@@ -1,18 +1,16 @@
 """Test slack bridge for slack-ui."""
 
+from __future__ import annotations
+
 import json
 import subprocess
 import sys
 import unittest
-from pathlib import Path
-
-ROOT = Path(__file__).resolve().parent.parent
-BRIDGE_SCRIPT = ROOT / "scripts" / "slack_bridge.py"
 
 
 class TestSlackBridge(unittest.TestCase):
     def test_list_channels(self):
-        cmd = [sys.executable, str(BRIDGE_SCRIPT), "list_channels"]
+        cmd = [sys.executable, "-m", "scripts.slack_bridge", "list_channels"]
         res = subprocess.run(cmd, capture_output=True, text=True, check=True)
         data = json.loads(res.stdout)
         self.assertIn("channels", data)
@@ -21,7 +19,7 @@ class TestSlackBridge(unittest.TestCase):
         self.assertIn("debugging", names)
 
     def test_get_messages(self):
-        cmd = [sys.executable, str(BRIDGE_SCRIPT), "get_messages", "C019"]
+        cmd = [sys.executable, "-m", "scripts.slack_bridge", "get_messages", "C019"]
         res = subprocess.run(cmd, capture_output=True, text=True, check=True)
         data = json.loads(res.stdout)
         self.assertIn("messages", data)
@@ -34,7 +32,8 @@ class TestSlackBridge(unittest.TestCase):
     def test_call_tool_via_bridge(self):
         cmd = [
             sys.executable,
-            str(BRIDGE_SCRIPT),
+            "-m",
+            "scripts.slack_bridge",
             "call_tool",
             "list_users",
             json.dumps({"limit": 10}),

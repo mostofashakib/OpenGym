@@ -1,3 +1,5 @@
-"""Browser simulation package for OpenGym."""
+"""Deterministic browser procurement simulation workspace."""
 
-__version__ = "1.0.0"
+from browser_sim.context import BrowserContext
+
+__all__: list[str] = ["BrowserContext"]

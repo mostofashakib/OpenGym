@@ -1,84 +1,95 @@
 #!/usr/bin/env python3
-"""CLI and REST Bridge for slack-ui Next.js application."""
+"""CLI and REST Bridge for slack-ui Next.js application using dependency injection."""
 
+from __future__ import annotations
+
+import argparse
 import json
-import os
 import sys
 from pathlib import Path
 
-from slack_sim.service import execute_tool, export_state, seed_database
-from slack_sim.identity import LOGGED_IN_USER
+from slack_sim.context import SlackContext
 
-ROOT_DIR = Path(__file__).resolve().parent.parent
 
-def resolve_db_path() -> Path:
-    if "SLACK_DB" in os.environ:
-        p = Path(os.environ["SLACK_DB"])
-        if p.exists():
-            return p
-    var_db = Path("/var/lib/slack/slack.db")
-    if var_db.exists():
-        return var_db
-    local_db = ROOT_DIR / "slack.db"
-    if not local_db.exists():
-        local_db.parent.mkdir(parents=True, exist_ok=True)
-        snap = ROOT_DIR / "slack_seed_snapshot.sql"
-        seed_database(local_db, snap)
-    return local_db
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Slack bridge CLI")
+    parser.add_argument("--db", type=Path, default=None, help="Injected database path")
+    parser.add_argument("--snapshot", type=Path, default=None, help="Injected snapshot path")
+    parser.add_argument("--actor", type=str, default=None, help="Injected actor user ID")
 
-def main():
-    if len(sys.argv) < 2:
-        print(json.dumps({"error": "Usage: slack_bridge.py <command> [args...]"}), file=sys.stderr)
-        sys.exit(1)
+    subparsers = parser.add_subparsers(dest="command", required=True)
 
-    cmd = sys.argv[1]
-    db_path = resolve_db_path()
+    # call_tool
+    tool_parser = subparsers.add_parser("call_tool")
+    tool_parser.add_argument("tool_name", type=str)
+    tool_parser.add_argument("payload", type=str, nargs="?", default="{}")
+    tool_parser.add_argument("actor_pos", type=str, nargs="?", default=None)
 
-    if cmd == "call_tool":
-        if len(sys.argv) < 3:
-            print(json.dumps({"error": "Missing tool name"}), file=sys.stderr)
-            sys.exit(1)
-        tool_name = sys.argv[2]
-        raw_args = sys.argv[3] if len(sys.argv) > 3 else "{}"
+    # export_state
+    subparsers.add_parser("export_state")
+
+    # list_channels
+    subparsers.add_parser("list_channels")
+
+    # get_messages
+    msg_parser = subparsers.add_parser("get_messages")
+    msg_parser.add_argument("channel_id", type=str, nargs="?", default="C019")
+
+    # get_threads
+    thread_parser = subparsers.add_parser("get_threads")
+    thread_parser.add_argument("thread_ts", type=str)
+    thread_parser.add_argument("channel_id", type=str, nargs="?", default="C019")
+
+    # list_users
+    subparsers.add_parser("list_users")
+
+    # seed
+    subparsers.add_parser("seed")
+
+    return parser
+
+
+def create_context(args: argparse.Namespace) -> SlackContext:
+    """Dependency injection factory for SlackContext."""
+    ctx = SlackContext.from_env()
+    db_path = args.db or ctx.db_path
+    snapshot_path = args.snapshot or ctx.snapshot_path
+    actor_id = getattr(args, "actor_pos", None) or args.actor or ctx.actor_id
+    return SlackContext(db_path=db_path, snapshot_path=snapshot_path, actor_id=actor_id)
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    context = create_context(args)
+
+    if args.command == "call_tool":
         try:
-            args = json.loads(raw_args)
+            payload = json.loads(args.payload)
         except Exception:
-            args = {}
-        actor = sys.argv[4] if len(sys.argv) > 4 else LOGGED_IN_USER.user_id
-        result = execute_tool(db_path, tool_name, args, actor_id=actor)
+            payload = {}
+        result = context.execute_tool(args.tool_name, payload)
         print(json.dumps(result))
 
-    elif cmd == "export_state":
-        state = export_state(db_path)
-        print(json.dumps(state))
+    elif args.command == "export_state":
+        print(json.dumps(context.export_state()))
 
-    elif cmd == "list_channels":
-        res = execute_tool(db_path, "list_channels", {"limit": 100})
-        print(json.dumps(res))
+    elif args.command == "list_channels":
+        print(json.dumps(context.execute_tool("list_channels", {"limit": 100})))
 
-    elif cmd == "get_messages":
-        channel_id = sys.argv[2] if len(sys.argv) > 2 else "C019"
-        res = execute_tool(db_path, "get_channel_messages", {"channel_id": channel_id, "limit": 50})
-        print(json.dumps(res))
+    elif args.command == "get_messages":
+        print(json.dumps(context.execute_tool("get_channel_messages", {"channel_id": args.channel_id, "limit": 50})))
 
-    elif cmd == "get_threads":
-        thread_ts = sys.argv[2]
-        channel_id = sys.argv[3] if len(sys.argv) > 3 else "C019"
-        res = execute_tool(db_path, "get_thread_replies", {"thread_ts": thread_ts, "channel_id": channel_id})
-        print(json.dumps(res))
+    elif args.command == "get_threads":
+        print(json.dumps(context.execute_tool("get_thread_replies", {"thread_ts": args.thread_ts, "channel_id": args.channel_id})))
 
-    elif cmd == "list_users":
-        res = execute_tool(db_path, "list_users", {"limit": 100})
-        print(json.dumps(res))
+    elif args.command == "list_users":
+        print(json.dumps(context.execute_tool("list_users", {"limit": 100})))
 
-    elif cmd == "seed":
-        snap = ROOT_DIR / "slack_seed_snapshot.sql"
-        seed_database(db_path, snap)
-        print(json.dumps({"ok": True, "db": str(db_path)}))
+    elif args.command == "seed":
+        context.seed()
+        print(json.dumps({"ok": True, "db": str(context.db_path)}))
 
-    else:
-        print(json.dumps({"error": f"Unknown command: {cmd}"}), file=sys.stderr)
-        sys.exit(1)
 
 if __name__ == "__main__":
     main()

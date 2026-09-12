@@ -1,0 +1,16 @@
+{
+  "venvPath": ".",
+  "venv": ".venv",
+  "include": [
+    "agent",
+    "verifiers",
+    "tests",
+    "scripts",
+    "environment"
+  ],
+  "extraPaths": [
+    ".",
+    "environment",
+    "tests"
+  ]
+}

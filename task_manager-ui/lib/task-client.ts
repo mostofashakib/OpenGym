@@ -4,6 +4,9 @@ import path from "path"
 const BRIDGE_SCRIPT = path.join(process.cwd(), "scripts", "task_bridge.py")
 
 export function runTaskBridge(cmd: string, args: string[] = []): Promise<any> {
+  const dbPath = process.env.TASKS_DB || path.join(process.cwd(), "tasks.db")
+  const snapshotPath = process.env.TASKS_SNAPSHOT || path.join(process.cwd(), "tasks_seed_snapshot.sql")
+
   return new Promise((resolve, reject) => {
     execFile(
       "python3",
@@ -12,6 +15,8 @@ export function runTaskBridge(cmd: string, args: string[] = []): Promise<any> {
         cwd: process.cwd(),
         env: {
           ...process.env,
+          TASKS_DB: dbPath,
+          TASKS_SNAPSHOT: snapshotPath,
           PYTHONPATH: `${path.join(process.cwd(), "environment")}:${process.env.PYTHONPATH || ""}`,
         },
         timeout: 10000,

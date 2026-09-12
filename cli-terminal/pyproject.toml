@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "opengym-terminal"
 version = "1.0.0"
@@ -6,6 +10,9 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = []
 
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
+[tool.setuptools]
+packages = ["terminal_sim", "agent", "verifiers"]
+
+[tool.setuptools.package-dir]
+terminal_sim = "environment/terminal_sim"
+

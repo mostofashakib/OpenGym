@@ -66,6 +66,8 @@ export interface SystemStateResponse {
 }
 
 export function runBridge(cmd: string, args: string[] = []): Promise<any> {
+  const dbPath = process.env.TERMINAL_DB || path.join(process.cwd(), "terminal.db")
+
   return new Promise((resolve, reject) => {
     execFile(
       "python3",
@@ -74,6 +76,7 @@ export function runBridge(cmd: string, args: string[] = []): Promise<any> {
         cwd: process.cwd(),
         env: {
           ...process.env,
+          TERMINAL_DB: dbPath,
           PYTHONPATH: `${path.join(process.cwd(), "environment")}:${process.env.PYTHONPATH || ""}`,
         },
         timeout: 10000,

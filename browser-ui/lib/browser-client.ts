@@ -4,6 +4,8 @@ import path from "path"
 const BRIDGE_SCRIPT = path.join(process.cwd(), "scripts", "browser_bridge.py")
 
 export function runBrowserBridge(cmd: string, args: string[] = []): Promise<any> {
+  const dbPath = process.env.BROWSER_DB || path.join(process.cwd(), "browser.db")
+
   return new Promise((resolve, reject) => {
     execFile(
       "python3",
@@ -12,6 +14,7 @@ export function runBrowserBridge(cmd: string, args: string[] = []): Promise<any>
         cwd: process.cwd(),
         env: {
           ...process.env,
+          BROWSER_DB: dbPath,
           PYTHONPATH: `${path.join(process.cwd(), "environment")}:${process.env.PYTHONPATH || ""}`,
         },
         timeout: 10000,

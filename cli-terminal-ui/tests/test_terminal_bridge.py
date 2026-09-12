@@ -1,18 +1,14 @@
-"""Test terminal bridge for cli-terminal-ui."""
+from __future__ import annotations
 
 import json
 import subprocess
 import sys
 import unittest
-from pathlib import Path
-
-ROOT = Path(__file__).resolve().parent.parent
-BRIDGE_SCRIPT = ROOT / "scripts" / "terminal_bridge.py"
 
 
 class TestTerminalBridge(unittest.TestCase):
     def test_get_system(self):
-        cmd = [sys.executable, str(BRIDGE_SCRIPT), "get_system"]
+        cmd = [sys.executable, "-m", "scripts.terminal_bridge", "get_system"]
         res = subprocess.run(cmd, capture_output=True, text=True, check=True)
         data = json.loads(res.stdout)
         self.assertIn("system", data)
@@ -23,7 +19,8 @@ class TestTerminalBridge(unittest.TestCase):
     def test_run_command_via_bridge(self):
         cmd = [
             sys.executable,
-            str(BRIDGE_SCRIPT),
+            "-m",
+            "scripts.terminal_bridge",
             "call_tool",
             "run_command",
             json.dumps({"command": "ps aux"}),
@@ -34,7 +31,7 @@ class TestTerminalBridge(unittest.TestCase):
         self.assertIn("USER", data["stdout"])
 
     def test_list_files_via_bridge(self):
-        cmd = [sys.executable, str(BRIDGE_SCRIPT), "list_files"]
+        cmd = [sys.executable, "-m", "scripts.terminal_bridge", "list_files"]
         res = subprocess.run(cmd, capture_output=True, text=True, check=True)
         data = json.loads(res.stdout)
         self.assertTrue(isinstance(data, list))
@@ -44,3 +41,4 @@ class TestTerminalBridge(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

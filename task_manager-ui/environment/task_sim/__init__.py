@@ -1,3 +1,5 @@
-"""Deterministic task-tracker workspace used by this Harbor task."""
+"""Deterministic task-tracking workspace used by this Harbor task."""
 
-__all__: list[str] = []
+from task_sim.context import TaskContext
+
+__all__: list[str] = ["TaskContext"]

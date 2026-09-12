@@ -1,3 +1,5 @@
-"""Terminal simulation package for OpenGym."""
+"""Deterministic CLI terminal simulation workspace."""
 
-__version__ = "1.0.0"
+from terminal_sim.context import TerminalContext
+
+__all__: list[str] = ["TerminalContext"]

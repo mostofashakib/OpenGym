@@ -1,87 +1,98 @@
 #!/usr/bin/env python3
-"""CLI and REST Bridge for task_manager-ui Next.js application."""
+"""CLI and REST Bridge for task_manager-ui Next.js application using dependency injection."""
 
+from __future__ import annotations
+
+import argparse
 import json
-import os
 import sys
 from pathlib import Path
 
-from task_sim.service import execute_tool, export_state, seed_database
-from task_sim.identity import LOGGED_IN_USER
+from task_sim.context import TaskContext
 
-ROOT_DIR = Path(__file__).resolve().parent.parent
 
-def resolve_db_path() -> Path:
-    if "TASKS_DB" in os.environ:
-        p = Path(os.environ["TASKS_DB"])
-        if p.exists():
-            return p
-    var_db = Path("/var/lib/tasks/tasks.db")
-    if var_db.exists():
-        return var_db
-    local_db = ROOT_DIR / "tasks.db"
-    if not local_db.exists():
-        local_db.parent.mkdir(parents=True, exist_ok=True)
-        snap = ROOT_DIR / "tasks_seed_snapshot.sql"
-        seed_database(local_db, snap)
-    return local_db
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Task Manager bridge CLI")
+    parser.add_argument("--db", type=Path, default=None, help="Injected database path")
+    parser.add_argument("--snapshot", type=Path, default=None, help="Injected snapshot path")
+    parser.add_argument("--actor", type=str, default=None, help="Injected actor user ID")
 
-def main():
-    if len(sys.argv) < 2:
-        print(json.dumps({"error": "Usage: task_bridge.py <command> [args...]"}), file=sys.stderr)
-        sys.exit(1)
+    subparsers = parser.add_subparsers(dest="command", required=True)
 
-    cmd = sys.argv[1]
-    db_path = resolve_db_path()
+    # call_tool
+    tool_parser = subparsers.add_parser("call_tool")
+    tool_parser.add_argument("tool_name", type=str)
+    tool_parser.add_argument("payload", type=str, nargs="?", default="{}")
+    tool_parser.add_argument("actor_pos", type=str, nargs="?", default=None)
 
-    if cmd == "call_tool":
-        if len(sys.argv) < 3:
-            print(json.dumps({"error": "Missing tool name"}), file=sys.stderr)
-            sys.exit(1)
-        tool_name = sys.argv[2]
-        raw_args = sys.argv[3] if len(sys.argv) > 3 else "{}"
+    # export_state
+    subparsers.add_parser("export_state")
+
+    # list_tasks
+    task_parser = subparsers.add_parser("list_tasks")
+    task_parser.add_argument("payload", type=str, nargs="?", default="{}")
+
+    # get_task
+    get_parser = subparsers.add_parser("get_task")
+    get_parser.add_argument("task_id", type=str)
+
+    # list_projects
+    subparsers.add_parser("list_projects")
+
+    # list_users
+    subparsers.add_parser("list_users")
+
+    # seed
+    subparsers.add_parser("seed")
+
+    return parser
+
+
+def create_context(args: argparse.Namespace) -> TaskContext:
+    """Dependency injection factory for TaskContext."""
+    ctx = TaskContext.from_env()
+    db_path = args.db or ctx.db_path
+    snapshot_path = args.snapshot or ctx.snapshot_path
+    actor_id = getattr(args, "actor_pos", None) or args.actor or ctx.actor_id
+    return TaskContext(db_path=db_path, snapshot_path=snapshot_path, actor_id=actor_id)
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    context = create_context(args)
+
+    if args.command == "call_tool":
         try:
-            args = json.loads(raw_args)
+            payload = json.loads(args.payload)
         except Exception:
-            args = {}
-        actor = sys.argv[4] if len(sys.argv) > 4 else LOGGED_IN_USER.user_id
-        result = execute_tool(db_path, tool_name, args, actor_id=actor)
+            payload = {}
+        result = context.execute_tool(args.tool_name, payload)
         print(json.dumps(result))
 
-    elif cmd == "export_state":
-        state = export_state(db_path)
-        print(json.dumps(state))
+    elif args.command == "export_state":
+        print(json.dumps(context.export_state()))
 
-    elif cmd == "list_tasks":
-        raw_args = sys.argv[2] if len(sys.argv) > 2 else "{}"
+    elif args.command == "list_tasks":
         try:
-            filters = json.loads(raw_args)
+            payload = json.loads(args.payload)
         except Exception:
-            filters = {}
-        res = execute_tool(db_path, "list_tasks", filters)
-        print(json.dumps(res))
+            payload = {}
+        print(json.dumps(context.execute_tool("list_tasks", payload)))
 
-    elif cmd == "get_task":
-        task_id = sys.argv[2]
-        res = execute_tool(db_path, "get_task", {"task_id": task_id})
-        print(json.dumps(res))
+    elif args.command == "get_task":
+        print(json.dumps(context.execute_tool("get_task", {"task_id": args.task_id})))
 
-    elif cmd == "list_projects":
-        res = execute_tool(db_path, "list_projects", {})
-        print(json.dumps(res))
+    elif args.command == "list_projects":
+        print(json.dumps(context.execute_tool("list_projects", {})))
 
-    elif cmd == "list_users":
-        res = execute_tool(db_path, "list_users", {})
-        print(json.dumps(res))
+    elif args.command == "list_users":
+        print(json.dumps(context.execute_tool("list_users", {})))
 
-    elif cmd == "seed":
-        snap = ROOT_DIR / "tasks_seed_snapshot.sql"
-        seed_database(db_path, snap)
-        print(json.dumps({"ok": True, "db": str(db_path)}))
+    elif args.command == "seed":
+        context.seed()
+        print(json.dumps({"ok": True, "db": str(context.db_path)}))
 
-    else:
-        print(json.dumps({"error": f"Unknown command: {cmd}"}), file=sys.stderr)
-        sys.exit(1)
 
 if __name__ == "__main__":
     main()
