@@ -79,15 +79,38 @@ harbor run -p ./gmail-ui -a oracle
 ./gmail-ui/kill.sh
 ```
 
-All environments ship a provider-agnostic agent. Ollama is the default because it needs no account and runs fully offline — only the tool calls enter the container. Switching models is a single environment variable:
+### LLM Providers & Configuration
+
+OpenGym is completely provider-agnostic. **Any LLM provider works out of the box** without requiring vendor-specific SDK installations, as all requests are dispatched over standard HTTP using strict JSON schemas:
+
+- **Ollama (Default)**: `ollama/<model>` (e.g., `ollama/qwen3.6:35b`, `ollama/gemma4:26b`, `ollama/llama3.3:70b`). **Ollama is currently the default provider** across all environments — it runs fully offline on your local machine with zero per-token costs and needs no API keys or accounts.
+- **OpenRouter**: `openrouter/<provider>/<model>` (e.g., `openrouter/anthropic/claude-3.5-sonnet`, `openrouter/meta-llama/llama-3.3-70b-instruct`). Requires `OPEN_ROUTER_KEY` in `.env`.
+- **Anthropic Direct**: `anthropic/<model>` (e.g., `anthropic/claude-3-5-sonnet-latest`). Requires `ANTHROPIC_API_KEY` in `.env`.
+- **Local & Custom Endpoints**: `local/<model>` or any compatible HTTP inference endpoint (such as vLLM, SGLang, or LM Studio) via base URL configuration.
+
+#### How to Change Providers
+
+To change providers, simply set the `MODEL` environment variable when invoking `./run.sh`:
 
 ```bash
-MODEL=ollama/gemma4:26b ./task_manager/run.sh
-MODEL=ollama/qwen3.6:35b ./gmail/run.sh
-MODEL=openrouter/anthropic/claude-opus-5 ./slack/run.sh
+# Use local Ollama models (default)
+MODEL=ollama/qwen3.6:35b ./task_manager/run.sh
+MODEL=ollama/gemma4:26b ./gmail/run.sh
+
+# Use hosted models via OpenRouter
+MODEL=openrouter/anthropic/claude-3.5-sonnet ./slack/run.sh
+
+# Use Anthropic direct
+MODEL=anthropic/claude-3-5-sonnet-latest ./task_manager/run.sh
 
 # Run without Harbor — a throwaway local workspace + real verifier
 cd task_manager && PYTHONPATH=environment:. python3 -m agent --local --grade
+```
+
+To configure keys for hosted models, add them to a `.env` file at the root of the repository:
+```bash
+OPEN_ROUTER_KEY="your-openrouter-key"
+ANTHROPIC_API_KEY="your-anthropic-key"
 ```
 
 **Benchmark results so far:** `qwen3.6:35b` solves `task_manager/`, `gmail/`, and `gmail-ui/` at 1.0 and reaches ~0.23 on `slack/` — a meaningful floor that shows the harder task is not trivially solvable.
