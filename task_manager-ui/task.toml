@@ -1,0 +1,50 @@
+schema_version = "1.4"
+artifacts = [
+  { source = "/logs/agent", exclude = ["sessions"] },
+  { source = "/var/lib/tasks/state-export.json", service = "tasks" },
+]
+
+[task]
+name = "opengym/task_manager-ui"
+version = "1.0.0"
+description = "Take ownership of a high-stakes enterprise release cutover blocker reconciliation via web console and project tracker tools: unlink circular disaster recovery dependencies, clear stale compliance blockers with third-party attestations, reassign and escalate auth race conditions, deduplicate cache cluster tickets, and submit a structured cutover handover report."
+authors = [{ name = "Mostofa Shakib" }]
+keywords = ["task-manager", "release-management", "deadlock-breaking", "blocker-triage", "compliance-gate", "deduplication", "sqlite", "harbor", "rl-environment", "mcp"]
+
+[metadata]
+difficulty = "hard"
+difficulty_explanation = "Requires multi-track investigation across 55+ tasks: discovering and unlinking a circular dependency deadlocking the disaster recovery track, verifying third-party compliance evidence to unblock a stale compliance gate, escalating and reassigning an auth race condition, and identifying duplicate tickets to prevent redundant triage."
+category = "agent-environment"
+environment_service = "tasks"
+database = "sqlite"
+originality = "Long-horizon release blocker reconciliation scenario for the OpenGym task-manager environment."
+
+[verifier]
+timeout_sec = 240.0
+environment_mode = "shared"
+user = "root"
+
+[[verifier.collect]]
+command = "python3 -m task_sim.admin_cli export_state --out /var/lib/tasks/state-export.json"
+service = "tasks"
+timeout_sec = 60.0
+user = "tasksd"
+
+[agent]
+timeout_sec = 1200.0
+user = "agent"
+network_mode = "allowlist"
+allowed_hosts = ["openrouter.ai"]
+
+[environment]
+network_mode = "no-network"
+build_timeout_sec = 900.0
+os = "linux"
+cpus = 2
+memory_mb = 2048
+storage_mb = 4096
+
+[[environment.mcp_servers]]
+name = "tasks"
+transport = "stdio"
+command = "/usr/local/bin/tasks-mcp"

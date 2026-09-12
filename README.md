@@ -21,7 +21,9 @@ Developed by [Mostofa Shakib](https://www.mostofashakib.com/).
 | [`gmail/`](gmail/) | **Headless** (CLI / FastMCP) | Triage vendor compromise disclosure and targeted spear-phishing: uncover critical API credential leak (`KEY_PROD_SEC_8821`), quarantine deceptive phishing vectors to trash/spam, enforce legal compliance holds, and draft multi-stakeholder formal regulatory disclosures and executive briefings. |
 | [`gmail-ui/`](gmail-ui/) | **Full UI** (Next.js / Web) | Full-featured interactive Next.js web application frontend and REST API for the email incident triage environment, suitable for human visual inspection, browser-use agents, and multimodal evaluation. |
 | [`slack/`](slack/) | **Headless** (CLI / FastMCP) | Drive an enterprise Acme migration cutover through staged reviews in `#debugging`: discover unstated blockers, verify cross-border data integrity and latency bounds, resolve circular dependencies, and submit a defensible go/no-go readiness assessment. |
+| [`slack-ui/`](slack-ui/) | **Full UI** (Next.js / Web Workspace) | Full-featured interactive Slack web application with channels (`#debugging`, `#acme-migration`), thread side-drawers, code review tools, emoji reactions, and migration cutover decision modal. |
 | [`task_manager/`](task_manager/) | **Headless** (CLI / FastMCP) | Reconcile release candidate deployment blockers across 55 tasks: uncover circular dependencies, reassign overloaded engineers, verify compliance and migration gating, and submit an auditable sign-off report without disturbing stable tasks. |
+| [`task_manager-ui/`](task_manager-ui/) | **Full UI** (Next.js / Web Tracker) | Enterprise issue tracker and project management portal (Linear / Jira-style) featuring interactive Kanban boards, list tables, task detail drawers with circular dependency cycle detection, and release handover sign-off. |
 
 Each directory is a fully self-contained environment — `task.toml`, Docker environment, reference solution, test suites, and layered verifiers. There is no shared package between them.
 
@@ -81,20 +83,27 @@ harbor run -p ./gmail -a oracle
 ./gmail/kill.sh
 ```
 
-For the visual interface variant of Gmail (`gmail-ui`):
+### Visual Interface Environments (Web & Multimodal)
 ```bash
-# For the visual interface variants:
-# Full-UI CLI Terminal (interactive web app at http://localhost:3002)
-harbor run -p ./cli-terminal-ui -a oracle
-./cli-terminal-ui/run.sh
+# Full-UI Gmail (interactive web app at http://localhost:3000)
+harbor run -p ./gmail-ui -a oracle
+./gmail-ui/run.sh
 
 # Full-UI Browser Procurement Portal (interactive web app at http://localhost:3001)
 harbor run -p ./browser-ui -a oracle
 ./browser-ui/run.sh
 
-# Full-UI Gmail (interactive web app at http://localhost:3000)
-harbor run -p ./gmail-ui -a oracle
-./gmail-ui/run.sh
+# Full-UI CLI Terminal (interactive web app at http://localhost:3002)
+harbor run -p ./cli-terminal-ui -a oracle
+./cli-terminal-ui/run.sh
+
+# Full-UI Slack Workspace (interactive web app at http://localhost:3003)
+harbor run -p ./slack-ui -a oracle
+./slack-ui/run.sh
+
+# Full-UI Task Manager Tracker (interactive web app at http://localhost:3004)
+harbor run -p ./task_manager-ui -a oracle
+./task_manager-ui/run.sh
 ```
 
 ### LLM Providers & Configuration

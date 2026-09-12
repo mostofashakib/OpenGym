@@ -1,0 +1,32 @@
+{
+  "include": [
+    "gmail",
+    "gmail-ui",
+    "slack",
+    "slack-ui",
+    "task_manager",
+    "task_manager-ui",
+    "browser",
+    "browser-ui",
+    "cli-terminal",
+    "cli-terminal-ui"
+  ],
+  "extraPaths": [
+    "gmail",
+    "gmail/environment",
+    "gmail-ui",
+    "gmail-ui/environment",
+    "slack",
+    "slack/environment",
+    "slack-ui",
+    "slack-ui/environment",
+    "task_manager",
+    "task_manager/environment",
+    "task_manager-ui",
+    "task_manager-ui/environment",
+    "browser",
+    "browser-ui",
+    "cli-terminal",
+    "cli-terminal-ui"
+  ]
+}

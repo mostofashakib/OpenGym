@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "slack"
+version = "0.1.0"
+description = "Slack RL environment and Harbor evaluation agent workspace"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "harbor>=0.22.0",
+]
+
+[tool.setuptools]
+packages = ["agent", "slack_sim", "tools", "verifiers", "verifiers.contracts"]
+
+[tool.setuptools.package-dir]
+slack_sim = "environment/slack_sim"

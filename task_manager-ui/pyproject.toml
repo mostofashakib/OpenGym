@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "task-manager-ui"
+version = "0.1.0"
+description = "Task Manager UI and Harbor evaluation agent workspace"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "harbor>=0.22.0",
+]
+
+[tool.setuptools]
+packages = ["agent", "task_sim", "tools", "verifiers", "verifiers.contracts"]
+
+[tool.setuptools.package-dir]
+task_sim = "environment/task_sim"
