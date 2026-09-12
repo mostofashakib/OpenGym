@@ -1,0 +1,49 @@
+schema_version = "1.4"
+artifacts = [
+  { source = "/logs/agent", exclude = ["sessions"] },
+  { source = "/var/lib/browser/state-export.json", service = "browser" },
+]
+
+[task]
+name = "opengym/browser-ui"
+version = "1.0.0"
+description = "Perform a multi-step enterprise procurement and third-party vendor compliance audit via web portal and browser tools: inspect requisitions, reject fraudulent GPU compute purchases, approve verified infrastructure renewals, blacklist shell suppliers, process overdue SOC-2 recertifications, and submit an authoritative compliance report."
+authors = [{ name = "Mostofa Shakib" }]
+keywords = ["browser", "web-automation", "procurement", "compliance", "audit", "mcp", "harbor", "agent-environment"]
+
+[metadata]
+difficulty = "hard"
+difficulty_explanation = "Requires navigating an interactive enterprise portal via DOM inspection, identifying fraudulent high-value requisitions, approving legitimate renewals, updating vendor risk statuses, submitting compliance filings, and verifying audit completeness."
+category = "agent-environment"
+environment_service = "browser"
+originality = "Built as a deterministic OpenGym headless browser environment with high-complexity web automation and procurement audit workflows."
+
+[verifier]
+timeout_sec = 240.0
+environment_mode = "shared"
+user = "root"
+
+[[verifier.collect]]
+command = "python3 -m browser_sim.admin_cli export_state --out /var/lib/browser/state-export.json"
+service = "browser"
+timeout_sec = 60.0
+user = "browserd"
+
+[agent]
+timeout_sec = 1200.0
+user = "agent"
+network_mode = "allowlist"
+allowed_hosts = ["openrouter.ai"]
+
+[environment]
+network_mode = "no-network"
+build_timeout_sec = 900.0
+os = "linux"
+cpus = 2
+memory_mb = 2048
+storage_mb = 4096
+
+[[environment.mcp_servers]]
+name = "browser"
+transport = "stdio"
+command = "/usr/local/bin/browser-mcp"

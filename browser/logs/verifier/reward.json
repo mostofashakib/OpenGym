@@ -1,0 +1,27 @@
+{
+  "reward": 1.0,
+  "success": 1.0,
+  "valid": 1.0,
+  "base_reward": 1.0,
+  "penalty_total": 0.0,
+  "audit_pass": 1.0,
+  "audit_findings": 0.0,
+  "findings_detail": [],
+  "layer_milestones": 1.0,
+  "layer_weight_milestones": 0.3,
+  "layer_final_state": 1.0,
+  "layer_weight_final_state": 0.4,
+  "layer_cleanliness": 1.0,
+  "layer_weight_cleanliness": 0.3,
+  "milestones_detail": {
+    "orders_page_visited": true,
+    "fraudulent_order_inspected": true,
+    "fraudulent_order_rejected": true,
+    "renewal_order_approved": true,
+    "vendor_directory_visited": true,
+    "shell_vendor_blacklisted": true,
+    "compliance_page_visited": true,
+    "soc2_cert_renewed": true,
+    "audit_report_submitted": true
+  }
+}

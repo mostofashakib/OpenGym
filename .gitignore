@@ -231,3 +231,8 @@ jobs/
 trajectory.json
 trajectory.txt
 oracle.txt
+
+# Node.js and Next.js artifacts
+node_modules/
+.next/
+.DS_Store

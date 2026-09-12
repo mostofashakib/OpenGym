@@ -1,0 +1,49 @@
+schema_version = "1.4"
+artifacts = [
+  { source = "/logs/agent", exclude = ["sessions"] },
+  { source = "/var/lib/terminal/state-export.json", service = "terminal" },
+]
+
+[task]
+name = "opengym/cli-terminal-ui"
+version = "1.0.0"
+description = "Diagnose and remediate a cascading production server failure on an enterprise host via web console and terminal tools: terminate rogue runaway processes, reclaim disk capacity, fix corrupted database connection configuration, secure private key permissions, and restore the payment processing service to active health."
+authors = [{ name = "Mostofa Shakib" }]
+keywords = ["terminal", "cli", "sysadmin", "devops", "incident-response", "mcp", "harbor", "agent-environment", "linux"]
+
+[metadata]
+difficulty = "hard"
+difficulty_explanation = "Requires discovering a runaway worker process via process metrics, diagnosing service boot failure logs, fixing invalid YAML and database port/host configurations, correcting file security permissions, and validating service health."
+category = "agent-environment"
+environment_service = "terminal"
+originality = "Built as a deterministic OpenGym CLI terminal environment with high-complexity system administration and incident remediation workflows."
+
+[verifier]
+timeout_sec = 240.0
+environment_mode = "shared"
+user = "root"
+
+[[verifier.collect]]
+command = "python3 -m terminal_sim.admin_cli export_state --out /var/lib/terminal/state-export.json"
+service = "terminal"
+timeout_sec = 60.0
+user = "terminald"
+
+[agent]
+timeout_sec = 1200.0
+user = "agent"
+network_mode = "allowlist"
+allowed_hosts = ["openrouter.ai"]
+
+[environment]
+network_mode = "no-network"
+build_timeout_sec = 900.0
+os = "linux"
+cpus = 2
+memory_mb = 2048
+storage_mb = 4096
+
+[[environment.mcp_servers]]
+name = "terminal"
+transport = "stdio"
+command = "/usr/local/bin/terminal-mcp"

@@ -1,0 +1,28 @@
+services:
+  main:
+    build:
+      context: ..
+      dockerfile: environment/Dockerfile
+      target: agent
+    volumes:
+      - terminal-ipc:/run/terminal
+    depends_on:
+      terminal:
+        condition: service_healthy
+
+  terminal:
+    build:
+      context: ..
+      dockerfile: environment/Dockerfile
+      target: world
+    volumes:
+      - terminal-ipc:/run/terminal
+    healthcheck:
+      test: ["CMD", "python3", "-m", "terminal_sim.admin_cli", "ping"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+      start_period: 2s
+
+volumes:
+  terminal-ipc:

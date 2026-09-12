@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+mkdir -p /run/browser /var/lib/browser
+exec python3 -m browser_sim.server

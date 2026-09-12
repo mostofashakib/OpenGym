@@ -14,6 +14,10 @@ Developed by [Mostofa Shakib](https://www.mostofashakib.com/).
 
 | Environment | Mode | What the agent must do |
 |---|---|---|
+| [`cli-terminal/`](cli-terminal/) | **Headless** (CLI / FastMCP) | Remediate critical production server degradation: discover and terminate rogue memory-leaking process (`worker-leak.py` PID `4921`), reclaim exhausted root partition disk space from bloated debug logs, repair corrupted database parameters in `/etc/payment-processor/config.yaml`, enforce `0600` permissions on SSL private keys, restore `payment-processor.service` to active health, and submit an auditable post-mortem. |
+| [`cli-terminal-ui/`](cli-terminal-ui/) | **Full UI** (Next.js / Web Console) | Full-featured interactive web terminal and server administration console with live shell execution, telemetry gauges (CPU, memory, disk), process management table, service health cards, virtual filesystem explorer, and REST API. |
+| [`browser/`](browser/) | **Headless** (Browser / FastMCP) | Execute multi-step enterprise procurement and compliance audit: navigate internal web portal `https://procure.corp`, inspect purchase orders, reject fraudulent GPU cluster requisition `PO-9821` with policy violation code, approve critical infrastructure renewal `PO-3410`, blacklist unverified supplier `GhostWire Hardware LLC`, renew `DataSync Corp` SOC-2 compliance certificate, and submit sign-off. |
+| [`browser-ui/`](browser-ui/) | **Full UI** (Next.js / Web Portal) | Enterprise procurement and compliance web portal (`https://procure.corp`) with executive dashboard, purchase orders ledger, vendor risk registry with 1-click blacklisting, interactive SOC-2 recertification form, and REST API. |
 | [`gmail/`](gmail/) | **Headless** (CLI / FastMCP) | Triage vendor compromise disclosure and targeted spear-phishing: uncover critical API credential leak (`KEY_PROD_SEC_8821`), quarantine deceptive phishing vectors to trash/spam, enforce legal compliance holds, and draft multi-stakeholder formal regulatory disclosures and executive briefings. |
 | [`gmail-ui/`](gmail-ui/) | **Full UI** (Next.js / Web) | Full-featured interactive Next.js web application frontend and REST API for the email incident triage environment, suitable for human visual inspection, browser-use agents, and multimodal evaluation. |
 | [`slack/`](slack/) | **Headless** (CLI / FastMCP) | Drive an enterprise Acme migration cutover through staged reviews in `#debugging`: discover unstated blockers, verify cross-border data integrity and latency bounds, resolve circular dependencies, and submit a defensible go/no-go readiness assessment. |
@@ -56,16 +60,22 @@ No API key is required by default. To use a hosted model, add credentials to a `
 
 ```bash
 # Deterministic reference run — no model, no key. Scores exactly 1.0.
+harbor run -p ./cli-terminal -a oracle
+harbor run -p ./browser -a oracle
 harbor run -p ./task_manager -a oracle
 harbor run -p ./slack -a oracle
 harbor run -p ./gmail -a oracle
 
 # Run with a local model (Ollama by default)
+./cli-terminal/run.sh
+./browser/run.sh
 ./task_manager/run.sh
 ./slack/run.sh
 ./gmail/run.sh
 
 # Stop all Harbor processes, containers, and viewer ports for a task
+./cli-terminal/kill.sh
+./browser/kill.sh
 ./task_manager/kill.sh
 ./slack/kill.sh
 ./gmail/kill.sh
@@ -73,10 +83,18 @@ harbor run -p ./gmail -a oracle
 
 For the visual interface variant of Gmail (`gmail-ui`):
 ```bash
-# Full-UI Gmail run (interactive web app at http://localhost:3000)
+# For the visual interface variants:
+# Full-UI CLI Terminal (interactive web app at http://localhost:3002)
+harbor run -p ./cli-terminal-ui -a oracle
+./cli-terminal-ui/run.sh
+
+# Full-UI Browser Procurement Portal (interactive web app at http://localhost:3001)
+harbor run -p ./browser-ui -a oracle
+./browser-ui/run.sh
+
+# Full-UI Gmail (interactive web app at http://localhost:3000)
 harbor run -p ./gmail-ui -a oracle
 ./gmail-ui/run.sh
-./gmail-ui/kill.sh
 ```
 
 ### LLM Providers & Configuration
@@ -119,7 +137,7 @@ ANTHROPIC_API_KEY="your-anthropic-key"
 
 ## Tests
 
-No test runner required. Each environment's `tests/test.sh` is its Harbor verifier — running it from a checkout executes the same suites the graded container runs (17 for `slack/`, 13 for `task_manager/`, 6 for `gmail/` and `gmail-ui/`):
+No test runner required. Each environment's `tests/test.sh` is its Harbor verifier — running it from a checkout executes the same suites the graded container runs (17 for `slack/`, 13 for `task_manager/`, 6 for `gmail/` and `gmail-ui/`, 6 for `cli-terminal/`, 6 for `browser/`):
 
 ```bash
 cd task_manager

@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+mkdir -p /run/terminal /var/lib/terminal
+exec python3 -m terminal_sim.server

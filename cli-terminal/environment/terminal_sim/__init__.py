@@ -1,0 +1,3 @@
+"""Terminal simulation package for OpenGym."""
+
+__version__ = "1.0.0"
