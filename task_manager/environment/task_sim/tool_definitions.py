@@ -180,6 +180,26 @@ TOOL_DEFINITIONS: tuple[dict[str, Any], ...] = (
         {"task_id": TEXT, "depends_on_task_id": TEXT},
         ["task_id", "depends_on_task_id"],
     ),
+    # -- comments & search --------------------------------------------------
+    _tool(
+        "add_comment",
+        "Post a comment or technical note on a task.",
+        {"task_id": TEXT, "content": TEXT},
+        ["task_id", "content"],
+    ),
+    _tool(
+        "list_comments",
+        "List all comments on a task in chronological order.",
+        {"task_id": TEXT},
+        ["task_id"],
+    ),
+    _tool(
+        "search_tasks",
+        "Search tasks across titles, descriptions, and comments by query term. "
+        "Returns matching tasks with context snippet.",
+        {"query": TEXT, "project_id": TEXT, "status": STATUS},
+        ["query"],
+    ),
     # -- reporting ----------------------------------------------------------
     #
     # The graded answer has to live somewhere the world owns. Grading reads the

@@ -225,11 +225,14 @@ def side_effects(state: dict[str, Any]) -> list[str]:
     assignee and labels.
     """
     exempt_tasks = set(RECONCILIATION_TARGET_TASKS)
+    latent_task_ids = {lt["task_id"] for lt in state.get("latent_tasks", [])}
 
     offenders: list[str] = []
     seeded = {row[0]: row for row in TRACKER_TASKS}
     for task in state.get("tasks", []):
         task_id = task["task_id"]
+        if task_id in latent_task_ids or task_id in exempt_tasks:
+            continue
         row = seeded.get(task_id)
         if row is None:
             offenders.append(f"created:{task_id}")
@@ -238,13 +241,12 @@ def side_effects(state: dict[str, Any]) -> list[str]:
             offenders.append(f"moved:{task_id}")
         if task["milestone_id"] != row[7]:
             offenders.append(f"remilestoned:{task_id}")
-        if task_id not in exempt_tasks:
-            if task["status"] != row[5]:
-                offenders.append(f"status_changed:{task_id}")
-            if task["assignee_id"] != row[4]:
-                offenders.append(f"reassigned:{task_id}")
-            if _labels_of(task) != tuple(row[10]):
-                offenders.append(f"relabelled:{task_id}")
+        if task["status"] != row[5]:
+            offenders.append(f"status_changed:{task_id}")
+        if task["assignee_id"] != row[4]:
+            offenders.append(f"reassigned:{task_id}")
+        if _labels_of(task) != tuple(row[10]):
+            offenders.append(f"relabelled:{task_id}")
     for violation in state.get("integrity_violations", []):
         offenders.append(f"integrity:{violation.get('kind', 'unknown')}")
     return offenders

@@ -31,6 +31,8 @@ _FLAGS: dict[str, tuple[str, str]] = {
     "--assignee": ("assignee", "Assignee user id."),
     "--status": ("status", "Task status."),
     "--priority": ("priority", "Task priority."),
+    "--content": ("content", "Comment text content."),
+    "--query": ("query", "Search query term."),
 }
 _LIST_FLAGS: dict[str, str] = {"--labels": "labels", "--task-ids": "task_ids"}
 _INTEGER_FLAGS: dict[str, str] = {"--due-at-ms": "due_at_ms"}

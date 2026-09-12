@@ -34,9 +34,17 @@ COMPETENT_RUN: Steps = (
     ("update_task", {"task_id": "TASK042", "assignee": "U008", "priority": "URGENT", "status": "IN_PROGRESS"}),
     ("mark_task_duplicate", {"task_id": "TASK051", "original_task_id": "TASK036"}),
     ("mark_task_duplicate", {"task_id": "TASK052", "original_task_id": "TASK036"}),
+    ("get_task", {"task_id": "TASK056"}),
+    ("list_comments", {"task_id": "TASK056"}),
+    ("add_comment", {"task_id": "TASK056", "content": "Reviewed Elena's fix. Replication lag drops to 85ms in staging tests. Hotfix approved."}),
+    ("update_task", {"task_id": "TASK056", "status": "COMPLETED"}),
+    ("update_task", {"task_id": "TASK057", "status": "IN_PROGRESS"}),
+    ("update_task", {"task_id": "TASK057", "status": "COMPLETED"}),
+    ("get_task", {"task_id": "TASK058"}),
+    ("list_comments", {"task_id": "TASK058"}),
     ("submit_handover_report", {
-        "task_ids": ["TASK035", "TASK042", "TASK044", "TASK048", "TASK051", "TASK052"],
-        "summary": "Completed reconciliation of Titanium v3 release cutover blockers. Decision: BLOCKED for cutover. Unlinked circular deadlock between TASK048 and TASK044, completed runbook and rollback. Cleared compliance hold on TASK035. Reassigned race condition TASK042 to Marcus Vance with URGENT priority. Deduplicated cache tickets TASK051 and TASK052 to TASK036.",
+        "task_ids": ["TASK035", "TASK042", "TASK044", "TASK048", "TASK051", "TASK052", "TASK056", "TASK057", "TASK058"],
+        "summary": "Completed reconciliation of Titanium v3 release cutover blockers. Decision: BLOCKED for cutover. Unlinked circular deadlock between TASK048 and TASK044, completed runbook and rollback. Cleared compliance hold on TASK035. Reassigned race condition TASK042 to Marcus Vance with URGENT priority. Deduplicated cache tickets TASK051 and TASK052 to TASK036. Resolved staging dry-run replica lag TASK056. Verified HSM key rotation TASK057. Release is BLOCKED due to PayCore EU upstream emergency maintenance window overlapping with cutover.",
     }),
 )
 
@@ -44,6 +52,7 @@ CAPABILITY_FAILURE_RUN: Steps = (
     ("list_tasks", {"project_id": "P005"}),
     ("get_task", {"task_id": "TASK033"}),
     ("get_task", {"task_id": "TASK035"}),
+    ("update_task", {"task_id": "TASK035", "status": "IN_PROGRESS"}),
     ("update_task", {"task_id": "TASK035", "status": "COMPLETED"}),
     ("update_task", {"task_id": "TASK042", "assignee": "U008", "priority": "URGENT", "status": "IN_PROGRESS"}),
     ("submit_handover_report", {

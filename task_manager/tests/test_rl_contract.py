@@ -30,13 +30,13 @@ def test_setup_and_reset() -> None:
         env = environment(workspace)
         info = env.setup()
         check("the contract states its version", info["contract_version"] == CONTRACT_VERSION)
-        check("it reports its tool count", info["tool_count"] == 16, str(info["tool_count"]))
+        check("it reports its tool count", info["tool_count"] == 19, str(info["tool_count"]))
 
         out = env.reset(session_cookie="ep1", user_instruction="Reassign Jordan's work.")
         check("reset returns a ready episode", out["episode"]["state"] == "ready")
         check("with a session at turn zero", out["session"]["turn"] == 0)
         check("and a rendered prompt carrying the tools",
-              len(out["prompt"]["tools"]) == 16 and "system" in out["prompt"])
+              len(out["prompt"]["tools"]) == 19 and "system" in out["prompt"])
 
         bad = False
         try:

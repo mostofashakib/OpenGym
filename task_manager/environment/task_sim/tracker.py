@@ -96,6 +96,7 @@ class Activation:
     event_id: str
     released_tasks: tuple[str, ...] = ()
     released_dependencies: tuple[str, ...] = ()
+    released_comments: tuple[str, ...] = ()
 
 
 @dataclass
@@ -322,7 +323,12 @@ def _evaluate(
 
 def _publishes(connection: sqlite3.Connection, event_id: str) -> bool:
     """Whether this event puts anything into the world when it fires."""
-    for table in ("latent_tasks", "latent_dependencies"):
+    for table in ("latent_tasks", "latent_dependencies", "latent_comments"):
+        has_table = connection.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (table,)
+        ).fetchone()
+        if not has_table:
+            continue
         row = connection.execute(
             f"SELECT 1 FROM {table} WHERE event_id = ? AND released = 0 LIMIT 1",
             (event_id,),
@@ -396,7 +402,35 @@ def _activate(connection: sqlite3.Connection, event_id: str) -> Activation:
         )
         released_dependencies.append(latent["dep_id"])
 
-    return Activation(event_id, tuple(released_tasks), tuple(released_dependencies))
+    released_comments: list[str] = []
+    has_comments = connection.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='latent_comments'"
+    ).fetchone()
+    if has_comments:
+        for latent in connection.execute(
+            "SELECT * FROM latent_comments WHERE event_id = ? AND released = 0 ORDER BY comment_id",
+            (event_id,),
+        ).fetchall():
+            connection.execute(
+                "INSERT INTO comments (comment_id, task_id, author_id, content, created_at_ms) "
+                "VALUES (?, ?, ?, ?, ?)",
+                (
+                    latent["comment_id"], latent["task_id"], latent["author_id"],
+                    latent["content"], activated_ms,
+                ),
+            )
+            connection.execute(
+                "UPDATE latent_comments SET released = 1, released_ms = ? WHERE comment_id = ?",
+                (activated_ms, latent["comment_id"]),
+            )
+            released_comments.append(latent["comment_id"])
+
+    return Activation(
+        event_id,
+        tuple(released_tasks),
+        tuple(released_dependencies),
+        tuple(released_comments),
+    )
 
 
 def _record(connection: sqlite3.Connection, action: _Action) -> None:

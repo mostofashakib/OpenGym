@@ -118,6 +118,9 @@ def test_every_tool_is_reachable_through_the_world() -> None:
         ("create_task", {"title": "Scratch 2", "task_id": "TASK801"}),
         ("mark_task_duplicate", {"task_id": "TASK801", "original_task_id": "TASK001"}),
         ("delete_task", {"task_id": "TASK002"}),
+        ("add_comment", {"task_id": "TASK001", "content": "Test comment"}),
+        ("list_comments", {"task_id": "TASK001"}),
+        ("search_tasks", {"query": "Test"}),
         ("submit_handover_report", {"task_ids": ["TASK001"], "summary": "scratch"}),
     ]
     covered = {tool for tool, _ in exercised}

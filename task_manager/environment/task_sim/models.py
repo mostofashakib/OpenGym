@@ -166,3 +166,27 @@ class LatentDependency:
     event_id: str
     task_id: str
     depends_on_task_id: str
+
+
+@dataclass(frozen=True, slots=True)
+class TaskComment:
+    """A comment on a task."""
+
+    comment_id: str
+    task_id: str
+    author_id: str
+    content: str
+    created_step: int = 0
+
+
+@dataclass(frozen=True, slots=True)
+class LatentComment:
+    """A comment that is invisible until its event fires."""
+
+    comment_id: str
+    event_id: str
+    task_id: str
+    author_id: str
+    content: str
+    created_step: int = 0
+

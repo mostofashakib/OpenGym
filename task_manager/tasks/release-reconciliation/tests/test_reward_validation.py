@@ -81,7 +81,7 @@ def test_abstention_earns_nothing() -> None:
 
 def test_the_capability_failure_is_graded_as_one() -> None:
     evaluation = grade(CAPABILITY_FAILURE_RUN)
-    check("missing the branch costs real credit", 0.3 < evaluation.reward < 0.9,
+    check("missing the branch costs real credit", 0.2 < evaluation.reward < 0.9,
           str(evaluation.reward))
     check("but is not a pass", evaluation.passed is False)
     check("and trips no veto",

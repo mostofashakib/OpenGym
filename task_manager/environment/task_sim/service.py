@@ -212,6 +212,25 @@ CREATE TABLE latent_dependencies (
     depends_on_task_id TEXT NOT NULL,
     released           INTEGER NOT NULL DEFAULT 0
 );
+CREATE TABLE comments (
+    comment_id    TEXT PRIMARY KEY,
+    task_id       TEXT NOT NULL REFERENCES tasks(task_id),
+    author_id     TEXT NOT NULL REFERENCES users(user_id),
+    content       TEXT NOT NULL,
+    created_at_ms INTEGER NOT NULL
+);
+CREATE INDEX idx_comments_task ON comments(task_id);
+CREATE TABLE latent_comments (
+    comment_id    TEXT PRIMARY KEY,
+    event_id      TEXT NOT NULL REFERENCES scenario_events(event_id),
+    task_id       TEXT NOT NULL,
+    author_id     TEXT NOT NULL,
+    content       TEXT NOT NULL,
+    created_at_ms INTEGER NOT NULL DEFAULT 0,
+    released      INTEGER NOT NULL DEFAULT 0,
+    released_ms   INTEGER
+);
+CREATE INDEX idx_latent_comments_event ON latent_comments(event_id);
 """
 
 
@@ -340,6 +359,28 @@ def seed_database(
                 for item in scenario.latent_dependencies
             ],
         )
+        try:
+            from task_sim.seed import TRACKER_COMMENTS
+            connection.executemany(
+                "INSERT INTO comments (comment_id, task_id, author_id, content, created_at_ms) "
+                "VALUES (?, ?, ?, ?, ?)",
+                [
+                    (comment_id, task_id, author_id, content, VIRTUAL_CLOCK.at(step))
+                    for comment_id, task_id, author_id, content, step in TRACKER_COMMENTS
+                ],
+            )
+        except (ImportError, AttributeError):
+            pass
+
+        if hasattr(scenario, "latent_comments"):
+            connection.executemany(
+                "INSERT INTO latent_comments (comment_id, event_id, task_id, author_id, content, created_at_ms) "
+                "VALUES (?, ?, ?, ?, ?, ?)",
+                [
+                    (item.comment_id, item.event_id, item.task_id, item.author_id, item.content, VIRTUAL_CLOCK.at(item.created_step))
+                    for item in scenario.latent_comments
+                ],
+            )
 
         connection.commit()
         snapshot_path.parent.mkdir(parents=True, exist_ok=True)
@@ -407,6 +448,14 @@ def export_state(db_path: Path) -> dict[str, Any]:
             "latent_tasks": query_rows(
                 connection,
                 "SELECT task_id, event_id, released, released_ms FROM latent_tasks ORDER BY task_id",
+            ),
+            "comments": query_rows(
+                connection,
+                "SELECT comment_id, task_id, author_id, content, created_at_ms FROM comments ORDER BY created_at_ms, comment_id",
+            ),
+            "latent_comments": query_rows(
+                connection,
+                "SELECT comment_id, event_id, task_id, author_id, released, released_ms FROM latent_comments ORDER BY comment_id",
             ),
             "action_log": plain_query_rows(connection, "SELECT * FROM action_log ORDER BY seq"),
             "integrity_violations": plain_query_rows(
@@ -539,7 +588,19 @@ def get_task(db_path: Path, task_id: str) -> dict[str, Any]:
                 (task_id,),
             )
         ]
-    return {"id": task_id, "task": task, "depends_on": depends_on, "required_by": required_by}
+        comments = query_rows(
+            connection,
+            "SELECT comment_id, task_id, author_id, content, created_at_ms "
+            "FROM comments WHERE task_id = ? ORDER BY created_at_ms, comment_id",
+            (task_id,),
+        )
+    return {
+        "id": task_id,
+        "task": task,
+        "depends_on": depends_on,
+        "required_by": required_by,
+        "comments": comments,
+    }
 
 
 def list_users(db_path: Path) -> dict[str, Any]:
@@ -572,6 +633,79 @@ def get_project(db_path: Path, project_id: str) -> dict[str, Any]:
             (project_id,),
         )
     return {"id": project_id, "project": dict(project), "tasks": tasks, "milestones": milestones}
+
+
+def list_comments(db_path: Path, task_id: str) -> dict[str, Any]:
+    with connect(db_path) as connection:
+        row = connection.execute(
+            "SELECT 1 FROM tasks WHERE task_id = ? AND deleted = 0", (task_id,)
+        ).fetchone()
+        if row is None:
+            raise ToolError("task_not_found", "not_found", "Task was not found.")
+        comments = query_rows(
+            connection,
+            "SELECT comment_id, task_id, author_id, content, created_at_ms "
+            "FROM comments WHERE task_id = ? ORDER BY created_at_ms, comment_id",
+            (task_id,),
+        )
+    return {"task_id": task_id, "comments": comments, "count": len(comments)}
+
+
+def search_tasks(
+    db_path: Path,
+    query: str,
+    project_id: str | None = None,
+    status: str | None = None,
+) -> dict[str, Any]:
+    if not query or not str(query).strip():
+        return {"query": query, "matches": [], "count": 0}
+    clean_query = str(query).strip().lower()
+    clauses = ["t.deleted = 0"]
+    params: list[Any] = []
+    if project_id:
+        clauses.append("t.project_id = ?")
+        params.append(project_id)
+    if status:
+        clauses.append("t.status = ?")
+        params.append(normalize_status(status))
+
+    where = f"WHERE {' AND '.join(clauses)}"
+    sql = f"""
+    SELECT DISTINCT t.task_id, t.title, t.description, t.status, t.priority, t.project_id, t.milestone_id, t.assignee_id
+    FROM tasks t
+    {where}
+    ORDER BY t.task_id
+    """
+    matches = []
+    with connect(db_path) as connection:
+        rows = connection.execute(sql, tuple(params)).fetchall()
+        for row in rows:
+            task_id = row["task_id"]
+            title = row["title"] or ""
+            desc = row["description"] or ""
+            comments = [
+                c["content"]
+                for c in connection.execute(
+                    "SELECT content FROM comments WHERE task_id = ? ORDER BY created_at_ms", (task_id,)
+                ).fetchall()
+            ]
+            all_text = f"{title}\n{desc}\n" + "\n".join(comments)
+            if clean_query in all_text.lower():
+                lower_text = all_text.lower()
+                idx = lower_text.find(clean_query)
+                start = max(0, idx - 40)
+                end = min(len(all_text), idx + len(clean_query) + 60)
+                snippet = all_text[start:end].replace("\n", " ").strip()
+                matches.append({
+                    "task_id": task_id,
+                    "title": title,
+                    "status": row["status"],
+                    "priority": row["priority"],
+                    "project_id": row["project_id"],
+                    "assignee_id": row["assignee_id"],
+                    "snippet": f"...{snippet}..." if (start > 0 or end < len(all_text)) else snippet,
+                })
+    return {"query": query, "matches": matches, "count": len(matches)}
 
 
 # ---------------------------------------------------------------------------
@@ -990,6 +1124,51 @@ def unlink_tasks(
     return {"removed": True, "task_id": task_id, "depends_on_task_id": depends_on_task_id}
 
 
+def add_comment(
+    db_path: Path,
+    task_id: str,
+    content: str,
+    actor_id: str = LOGGED_IN_USER.user_id,
+) -> dict[str, Any]:
+    if not content or not str(content).strip():
+        raise ToolError("empty_comment", "validation_error", "Comment content cannot be empty.")
+    with connect(db_path) as connection:
+        _require_user(connection, actor_id, "Acting user was not found.")
+        row = connection.execute(
+            "SELECT * FROM tasks WHERE task_id = ? AND deleted = 0", (task_id,)
+        ).fetchone()
+        if row is None:
+            raise ToolError("task_not_found", "not_found", "Task was not found.")
+        now = VIRTUAL_CLOCK.advance(connection)
+        cursor = connection.execute("SELECT comment_id FROM comments UNION SELECT comment_id FROM latent_comments")
+        max_num = 0
+        for (cid,) in cursor.fetchall():
+            if str(cid).startswith("CMT") and str(cid)[3:].isdigit():
+                max_num = max(max_num, int(str(cid)[3:]))
+        comment_id = f"CMT{max_num + 1:03d}"
+        connection.execute(
+            "INSERT INTO comments (comment_id, task_id, author_id, content, created_at_ms) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (comment_id, task_id, actor_id, str(content).strip(), now),
+        )
+        insert_audit(
+            connection,
+            task_id,
+            actor_id,
+            "comment_added",
+            {},
+            {"comment_id": comment_id, "content": str(content).strip()},
+        )
+        connection.commit()
+    return {
+        "comment_id": comment_id,
+        "task_id": task_id,
+        "author_id": actor_id,
+        "content": str(content).strip(),
+        "created_at_ms": now,
+    }
+
+
 def submit_handover_report(
     db_path: Path, task_ids: list[str], summary: str = "",
     actor_id: str = LOGGED_IN_USER.user_id,
@@ -1189,6 +1368,22 @@ _TOOL_HANDLERS: dict[str, Any] = {
     ),
     "unlink_tasks": lambda db, payload, actor: unlink_tasks(
         db, str(payload.get("task_id", "")), str(payload.get("depends_on_task_id", "")), actor
+    ),
+    "add_comment": lambda db, payload, actor: add_comment(
+        db,
+        task_id=str(payload.get("task_id", "")),
+        content=str(payload.get("content", "")),
+        actor_id=actor,
+    ),
+    "list_comments": lambda db, payload, actor: list_comments(
+        db,
+        task_id=str(payload.get("task_id", "")),
+    ),
+    "search_tasks": lambda db, payload, actor: search_tasks(
+        db,
+        query=str(payload.get("query", "")),
+        project_id=payload.get("project_id"),
+        status=payload.get("status"),
     ),
     "submit_handover_report": lambda db, payload, actor: submit_handover_report(
         db,

@@ -18,6 +18,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from task_sim.models import (
+    LatentComment,
     LatentDependency,
     LatentTask,
     ScenarioEvent,
@@ -36,6 +37,7 @@ class Scenario:
     rules: tuple[ScenarioRule, ...] = ()
     latent_tasks: tuple[LatentTask, ...] = ()
     latent_dependencies: tuple[LatentDependency, ...] = ()
+    latent_comments: tuple[LatentComment, ...] = ()
     #: Ids of events that carry no rows of their own. Recording that the agent
     #: got somewhere is often the point, so this is not an edge case.
     observation_only: tuple[str, ...] = field(default=())
@@ -52,6 +54,12 @@ class Scenario:
                 raise ValueError(
                     f"latent dependency {dependency.dep_id} belongs to undeclared "
                     f"event {dependency.event_id}"
+                )
+        for comment in self.latent_comments:
+            if comment.event_id not in declared:
+                raise ValueError(
+                    f"latent comment {comment.comment_id} belongs to undeclared "
+                    f"event {comment.event_id}"
                 )
         for rule in self.rules:
             unknown = (

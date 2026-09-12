@@ -13,7 +13,13 @@ workspace and lets two reseeds produce byte-identical snapshots.
 from __future__ import annotations
 
 from task_sim.clock import ONE_DAY_MS, START_MS
-from task_sim.models import ScenarioEvent, ScenarioRule
+from task_sim.models import (
+    LatentComment,
+    LatentDependency,
+    LatentTask,
+    ScenarioEvent,
+    ScenarioRule,
+)
 from task_sim.scenario import Scenario
 
 # ---------------------------------------------------------------------------
@@ -493,6 +499,21 @@ TRACKER_DEPENDENCIES = [
 
 
 # ---------------------------------------------------------------------------
+# Comments  (comment_id, task_id, author_id, content, step)
+# ---------------------------------------------------------------------------
+
+TRACKER_COMMENTS = [
+    ("CMT001", "TASK035", "U002", "Attached vendor SOC2 Type II report for auth provider. Attestation recorded under TASK047. Waiting for release lead sign-off.", 12),
+    ("CMT002", "TASK042", "U003", "Intermittent token invalidation failure detected under concurrency in staging cluster. Need Marcus Vance (U008) to apply mutex lock patch.", 15),
+    ("CMT003", "TASK044", "U007", "Rollback automation script completed and tested against staging backup snapshot.", 18),
+    ("CMT004", "TASK048", "U001", "Runbook steps validated against disaster recovery staging cluster. Waiting for circular link resolution to mark complete.", 20),
+    ("CMT005", "TASK051", "U005", "Identical symptoms to TASK036 redis eviction bug. Recommend deduplicating.", 22),
+    ("CMT006", "TASK052", "U006", "Duplicate report of cache cluster invalidation TASK036.", 25),
+    ("CMT007", "TASK040", "U001", "Staging suite waiting for rollback automation and DR runbook before executing dry-run rehearsal.", 28),
+]
+
+
+# ---------------------------------------------------------------------------
 # Titanium v3 Enterprise Release Reconciliation Scenario
 # ---------------------------------------------------------------------------
 
@@ -504,7 +525,10 @@ AUDIT_TASKS = (
     "TASK045", "TASK046", "TASK047", "TASK048", "TASK049", "TASK050",
     "TASK051", "TASK052",
 )
-RECONCILIATION_TARGET_TASKS = ("TASK035", "TASK042", "TASK044", "TASK048", "TASK051", "TASK052")
+RECONCILIATION_TARGET_TASKS = (
+    "TASK035", "TASK042", "TASK044", "TASK048", "TASK051", "TASK052",
+    "TASK056", "TASK057", "TASK058",
+)
 
 RELEASE_RECONCILIATION_EVENTS = (
     ScenarioEvent("release_audit_inspected", "The agent enumerated and inspected Titanium v3 cutover tasks."),
@@ -515,8 +539,105 @@ RELEASE_RECONCILIATION_EVENTS = (
     ScenarioEvent("race_reassigned", "Token revocation race condition (TASK042) was assigned to Marcus Vance (U008) with URGENT priority."),
     ScenarioEvent("task051_deduplicated", "TASK051 was marked duplicate of TASK036."),
     ScenarioEvent("task052_deduplicated", "TASK052 was marked duplicate of TASK036."),
-    ScenarioEvent("handover_reported", "The agent submitted a structured release blocker reconciliation report."),
-    ScenarioEvent("reconciliation_complete", "All Titanium v3 cutover blockers were reconciled."),
+    ScenarioEvent("rehearsal_dryrun_failed", "Staging dry-run rehearsal detected EU-Central replica sync lag (ERR_REP_LAG_4200)."),
+    ScenarioEvent("replica_patch_available", "Agent inspected TASK056, surfacing Elena's replica synchronization fix."),
+    ScenarioEvent("task056_resolved", "Replication lag ticket (TASK056) was marked COMPLETED."),
+    ScenarioEvent("task057_resolved", "HSM encryption key rotation audit ticket (TASK057) was marked COMPLETED."),
+    ScenarioEvent("final_rehearsal_executed", "Final rehearsal executed and external PayCore EU payment maintenance conflict announced."),
+    ScenarioEvent("external_blocker_inspected", "The agent discovered and inspected the external PayCore EU maintenance blocker (TASK058)."),
+    ScenarioEvent("handover_reported", "A terminal handover report was submitted."),
+    ScenarioEvent("reconciliation_complete", "All Titanium v3 cutover blockers were reconciled and verified."),
+)
+
+RELEASE_RECONCILIATION_LATENT_TASKS = (
+    LatentTask(
+        task_id="TASK056",
+        event_id="rehearsal_dryrun_failed",
+        title="Resolve EU-Central replica sync lag under cache warm-up",
+        description="Staging cutover dry-run failed at step 4/7: replication lag spiked to 4,200ms during cache warm-up (ERR_REP_LAG_4200). Elena Rostova investigating database batch chunk size.",
+        creator_id="U001",
+        assignee_id="U007",
+        status="IN_PROGRESS",
+        project_id="P005",
+        milestone_id="M006",
+        priority="HIGH",
+        labels=("database", "release-blocker"),
+    ),
+    LatentTask(
+        task_id="TASK057",
+        event_id="rehearsal_dryrun_failed",
+        title="Verify HSM encryption key rotation audit trail",
+        description="SOC2 CC6.8 audit requirement for production cutover sign-off. Cross-reference with KMS key rotation schedule.",
+        creator_id="U002",
+        assignee_id="U002",
+        status="PENDING",
+        project_id="P005",
+        milestone_id="M006",
+        priority="MEDIUM",
+        labels=("compliance", "security"),
+    ),
+    LatentTask(
+        task_id="TASK058",
+        event_id="final_rehearsal_executed",
+        title="PayCore EU payment gateway unscheduled maintenance overlap",
+        description="Upstream payment provider PayCore EU announced emergency unscheduled maintenance for Thursday 22:00-02:00 UTC, overlapping completely with the Titanium v3 cutover window. In-flight payment authorizations will fail during this period.",
+        creator_id="U001",
+        assignee_id="U001",
+        status="BLOCKED",
+        project_id="P005",
+        milestone_id="M006",
+        priority="URGENT",
+        labels=("upstream", "external-blocker"),
+    ),
+)
+
+RELEASE_RECONCILIATION_LATENT_DEPS = (
+    LatentDependency("DEP030", "rehearsal_dryrun_failed", "TASK043", "TASK056"),
+    LatentDependency("DEP031", "rehearsal_dryrun_failed", "TASK040", "TASK057"),
+    LatentDependency("DEP032", "final_rehearsal_executed", "TASK040", "TASK058"),
+)
+
+RELEASE_RECONCILIATION_LATENT_COMMENTS = (
+    LatentComment(
+        comment_id="CMT010",
+        event_id="rehearsal_dryrun_failed",
+        task_id="TASK040",
+        author_id="U001",
+        content="AUTOMATED CI/CD ALERT: Staging cutover dry-run failed at Step 4/7: Database replication lag on EU-Central read replica spiked to 4,200ms during cache warm-up (ERR_REP_LAG_4200). Threshold is <500ms. Release blocked.",
+        created_step=35,
+    ),
+    LatentComment(
+        comment_id="CMT011",
+        event_id="rehearsal_dryrun_failed",
+        task_id="TASK035",
+        author_id="U002",
+        content="COMPLIANCE NOTICE: Vendor attestation verified, but SOC2 CC6.8 requires confirmation of the secondary HSM encryption key rotation audit ticket before production cutover.",
+        created_step=35,
+    ),
+    LatentComment(
+        comment_id="CMT012",
+        event_id="replica_patch_available",
+        task_id="TASK056",
+        author_id="U007",
+        content="Elena Rostova: Identified batch flush bottleneck in db_pool.py. Hotfix patch committed to branch release-v3.0. Rehearsal test in staging shows lag dropped to 85ms. Release lead: please review staging test results, post an approval comment on this ticket confirming the lag threshold (<500ms) is satisfied, and mark COMPLETED so final dry-run can proceed.",
+        created_step=40,
+    ),
+    LatentComment(
+        comment_id="CMT013",
+        event_id="final_rehearsal_executed",
+        task_id="TASK040",
+        author_id="U001",
+        content="STAGING DRILL SUCCESS: Internal dry-run rehearsal passed 7/7 steps. Recovery drill verified.",
+        created_step=45,
+    ),
+    LatentComment(
+        comment_id="CMT014",
+        event_id="final_rehearsal_executed",
+        task_id="TASK058",
+        author_id="U001",
+        content="CRITICAL EXTERNAL BLOCKER: PayCore EU maintenance cannot be rescheduled. Cutover at Thursday 22:00 UTC will cause customer-visible payment processing failures. Release MUST be held (NO-GO / BLOCKED) until a new cutover window is agreed.",
+        created_step=46,
+    ),
 )
 
 RELEASE_RECONCILIATION_RULES = (
@@ -553,15 +674,46 @@ RELEASE_RECONCILIATION_RULES = (
         table="tasks", row_id="TASK052", field="status", value="DUPLICATE",
     ),
     ScenarioRule(
-        "rel_r040_report", "handover_reported", "tool_called",
+        "rel_r040_rehearsal_fail", "rehearsal_dryrun_failed", "all_of",
+        requires_activated=("task044_completed", "task048_completed", "compliance_unblocked"),
+    ),
+    ScenarioRule(
+        "rel_r050_replica_patch", "replica_patch_available", "observed",
+        observed_ids=("TASK056",),
+        requires_activated=("rehearsal_dryrun_failed",),
+    ),
+    ScenarioRule(
+        "rel_r051_task056_done", "task056_resolved", "field_equals",
+        table="tasks", row_id="TASK056", field="status", value="COMPLETED",
+        requires_activated=("replica_patch_available",),
+    ),
+    ScenarioRule(
+        "rel_r052_task057_done", "task057_resolved", "field_equals",
+        table="tasks", row_id="TASK057", field="status", value="COMPLETED",
+        requires_activated=("rehearsal_dryrun_failed",),
+    ),
+    ScenarioRule(
+        "rel_r060_final_rehearsal", "final_rehearsal_executed", "all_of",
+        requires_activated=("task056_resolved", "task057_resolved"),
+    ),
+    ScenarioRule(
+        "rel_r065_blocker_inspected", "external_blocker_inspected", "observed",
+        observed_ids=("TASK058",),
+        requires_activated=("final_rehearsal_executed",),
+    ),
+    ScenarioRule(
+        "rel_r070_report", "handover_reported", "tool_called",
         tools=("submit_handover_report",),
     ),
     ScenarioRule(
-        "rel_r050_complete", "reconciliation_complete", "all_of",
+        "rel_r080_complete", "reconciliation_complete", "all_of",
         requires_activated=(
             "release_audit_inspected", "circular_dep_broken",
             "task048_completed", "task044_completed", "compliance_unblocked",
             "race_reassigned", "task051_deduplicated", "task052_deduplicated",
+            "rehearsal_dryrun_failed", "replica_patch_available",
+            "task056_resolved", "task057_resolved",
+            "final_rehearsal_executed", "external_blocker_inspected",
             "handover_reported",
         ),
     ),
@@ -570,7 +722,10 @@ RELEASE_RECONCILIATION_RULES = (
 RELEASE_RECONCILIATION_SCENARIO = Scenario(
     events=RELEASE_RECONCILIATION_EVENTS,
     rules=RELEASE_RECONCILIATION_RULES,
-    observation_only=tuple(event.event_id for event in RELEASE_RECONCILIATION_EVENTS),
+    latent_tasks=RELEASE_RECONCILIATION_LATENT_TASKS,
+    latent_dependencies=RELEASE_RECONCILIATION_LATENT_DEPS,
+    latent_comments=RELEASE_RECONCILIATION_LATENT_COMMENTS,
+    observation_only=("release_audit_inspected", "replica_patch_available", "reconciliation_complete"),
 )
 
 

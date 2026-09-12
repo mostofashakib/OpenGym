@@ -590,11 +590,20 @@ CORRECT = [
     ),
     _call("mark_task_duplicate", {"task_id": "TASK051", "original_task_id": "TASK036"}),
     _call("mark_task_duplicate", {"task_id": "TASK052", "original_task_id": "TASK036"}),
+    _call("get_task", {"task_id": "TASK056"}),
+    _call("list_comments", {"task_id": "TASK056"}),
+    _call("add_comment", {"task_id": "TASK056", "content": "Verified replica lag dropped to 85ms in staging with hotfix. SLA satisfied."}),
+    _call("update_task", {"task_id": "TASK056", "status": "COMPLETED"}),
+    _call("get_task", {"task_id": "TASK057"}),
+    _call("update_task", {"task_id": "TASK057", "status": "IN_PROGRESS"}),
+    _call("update_task", {"task_id": "TASK057", "status": "COMPLETED"}),
+    _call("get_task", {"task_id": "TASK058"}),
+    _call("list_comments", {"task_id": "TASK058"}),
     _call(
         "submit_handover_report",
         {
-            "summary": "Reconciled Titanium v3 cutover blockers. Decision: BLOCKED pending final staging integration and cache invalidation. Deadlocked DR runbook TASK048 unlinked and completed, snapshot rollback TASK044 completed. Stale compliance hold TASK035 cleared. Race condition TASK042 reassigned to Marcus Vance with URGENT priority. Duplicate cache tickets TASK051 and TASK052 closed against TASK036.",
-            "task_ids": ["TASK035", "TASK042", "TASK044", "TASK048", "TASK051", "TASK052"],
+            "summary": "Completed reconciliation of Titanium v3 release cutover blockers. Decision: BLOCKED for cutover. Unlinked circular deadlock between TASK048 and TASK044, completed runbook and rollback. Cleared compliance hold on TASK035 after verifying attestation on TASK047. Reassigned race condition TASK042 to Marcus Vance with URGENT priority. Deduplicated cache tickets TASK051 and TASK052 to TASK036. Verified Elena's replica lag patch on TASK056 and verified HSM key rotation TASK057. Final rehearsal revealed unscheduled emergency maintenance by PayCore EU (TASK058) during Thursday 22:00-02:00 UTC overlapping cutover window. Cutover is BLOCKED.",
+            "task_ids": ["TASK035", "TASK042", "TASK044", "TASK048", "TASK051", "TASK052", "TASK056", "TASK057", "TASK058"],
         },
     ),
     Completion(text="Done."),
@@ -617,7 +626,7 @@ INCOMPLETE = [
 def test_the_loop_actually_changes_the_world_it_is_graded_on() -> None:
     with Sandbox() as sandbox:
         result = asyncio.run(
-            ToolLoop(ScriptedProvider(CORRECT), sandbox.backend, system="s", max_turns=30).run("go")
+            ToolLoop(ScriptedProvider(CORRECT), sandbox.backend, system="s", max_turns=35).run("go")
         )
         check("the scripted episode finished", result.stop_reason == "answered", result.stop_reason)
         check("every call was accepted",
@@ -650,7 +659,7 @@ def test_the_loop_actually_changes_the_world_it_is_graded_on() -> None:
 def test_the_trajectory_is_valid_atif() -> None:
     with Sandbox() as sandbox:
         result = asyncio.run(
-            ToolLoop(ScriptedProvider(CORRECT), sandbox.backend, system="s", max_turns=20).run("go")
+            ToolLoop(ScriptedProvider(CORRECT), sandbox.backend, system="s", max_turns=30).run("go")
         )
     trajectory = build_trajectory(
         result,

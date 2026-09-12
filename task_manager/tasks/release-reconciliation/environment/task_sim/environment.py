@@ -26,7 +26,7 @@ from task_sim.sqlite_common import ToolError, connect, storage_errors
 from task_sim.tool_definitions import get_tool_definitions
 
 CONTRACT_VERSION = "7.0"
-DEFAULT_MAX_TURNS = 20
+DEFAULT_MAX_TURNS = 50
 DEFAULT_PROMPT_ID = "tracker_operator"
 SESSION_COOKIE_PATTERN = re.compile(r"^[A-Za-z0-9._-]{1,128}$")
 
