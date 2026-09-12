@@ -6,11 +6,13 @@ if [ -d "/tests" ]; then
   TESTS_DIR="/tests"
   LOGS_DIR="${LOGS_DIR:-/logs/verifier}"
   export PYTHONPATH="/opt/grading:/opt/grading/verifiers:/opt/tools:/opt/agent:/opt:/tests:${PYTHONPATH:-}"
+  SUITES=(test_mcp_server test_verifiers test_gmail_sim test_end_to_end)
 else
   SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
   TESTS_DIR="$SCRIPT_DIR/tests"
   LOGS_DIR="${LOGS_DIR:-$SCRIPT_DIR/logs/verifier}"
   export PYTHONPATH="$SCRIPT_DIR:$SCRIPT_DIR/environment:$SCRIPT_DIR/tests:${PYTHONPATH:-}"
+  SUITES=(test_agent_adapters test_mcp_server test_verifiers test_gmail_sim test_end_to_end)
 fi
 
 PYTHON_BIN="python3"
@@ -30,7 +32,7 @@ cat << 'EOF' > "$LOGS_DIR/reward.json"
 EOF
 
 selftest_status=0
-for suite in test_agent_adapters test_mcp_server test_verifiers test_gmail_sim test_end_to_end; do
+for suite in "${SUITES[@]}"; do
   echo "--- Running ${suite} ---"
   if ! "$PYTHON_BIN" "$TESTS_DIR/${suite}.py"; then
     echo "SELF-TEST FAILED: ${suite}" >&2
