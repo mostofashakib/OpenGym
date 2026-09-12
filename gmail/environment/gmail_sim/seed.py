@@ -3,10 +3,21 @@
 from __future__ import annotations
 
 import random
+import sys
 from pathlib import Path
 
-from gmail_sim.clock import init_clock
-from gmail_sim.sqlite_common import initialize_database, get_connection
+try:
+    from .clock import init_clock
+    from .sqlite_common import get_connection, initialize_database
+except (ImportError, ValueError):
+    _pkg_root = Path(__file__).resolve().parent.parent
+    if str(_pkg_root) not in sys.path:
+        sys.path.insert(0, str(_pkg_root))
+    from gmail_sim.clock import init_clock  # type: ignore[no-redef]
+    from gmail_sim.sqlite_common import (  # type: ignore[no-redef]
+        get_connection,
+        initialize_database,
+    )
 
 SYSTEM_LABELS = [
     ("INBOX", "INBOX", "SYSTEM", None),
@@ -379,8 +390,7 @@ def seed_database(db_path: Path | str, snapshot_path: Path | str | None = None, 
             snap = Path(snapshot_path)
             snap.parent.mkdir(parents=True, exist_ok=True)
             with open(snap, "w", encoding="utf-8") as f:
-                for line in conn.iterdump():
-                    f.write(f"{line}\n")
+                f.writelines(f"{line}\n" for line in conn.iterdump())
 
 
 def main() -> None:
