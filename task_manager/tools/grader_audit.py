@@ -33,7 +33,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "environment"))
 
 from verifiers import Episode, TieredRewardEngine  # noqa: E402
-from verifiers.contracts.reassignment import build_contract  # noqa: E402
+from verifiers.contracts.release_reconciliation import build_contract  # noqa: E402
 
 DEFAULT_MODEL = os.environ.get("AUDIT_MODEL", "anthropic/claude-sonnet-5")
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"

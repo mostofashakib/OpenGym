@@ -1,34 +1,29 @@
 schema_version = "1.4"
 artifacts = [
-  # Both Claude Code and the deterministic oracle emit an ATIF trajectory.json
-  # in this directory. Session transcripts are excluded because the trajectory
-  # already carries the model interaction a reviewer needs.
   { source = "/logs/agent", exclude = ["sessions"] },
   { source = "/var/lib/tasks/state-export.json", service = "tasks" },
 ]
 
 [task]
-name = "forge/task-manager-reassignment"
+name = "forge/task-manager-release-reconciliation"
 version = "1.0.0"
-description = "Hand over a departing teammate's queue: enumerate the complete set, branch each task on milestone presence, append a triage label without replacing the ones already there, leave everything else untouched, and report what was changed."
+description = "Take ownership of a high-stakes enterprise release cutover blocker reconciliation: unlink circular disaster recovery dependencies, clear stale compliance blockers with third-party attestations, reassign and escalate auth race conditions, deduplicate cache cluster tickets, and submit a structured cutover handover report."
 authors = [{ name = "Mostofa Shakib" }]
-keywords = ["task-manager", "conditional-branching", "scope-discipline", "handover", "sqlite", "harbor", "rl-environment", "mcp"]
+keywords = ["task-manager", "release-management", "deadlock-breaking", "blocker-triage", "compliance-gate", "deduplication", "sqlite", "harbor", "rl-environment", "mcp"]
 
 [metadata]
-difficulty = "medium"
-difficulty_explanation = "Per-task conditional branching over a set the agent has to find for itself. Four of the five tasks take the same action, which makes the fifth easy to sweep up with them; update_task replaces the label list rather than merging it, so appending requires reading the record first. Agent failure: bulk-reassigns everyone to one person, or replaces labels instead of appending."
+difficulty = "hard"
+difficulty_explanation = "Requires multi-track investigation across 55+ tasks: discovering and unlinking a circular dependency deadlocking the disaster recovery track, verifying third-party compliance evidence to unblock a stale compliance gate, escalating and reassigning an auth race condition, and identifying duplicate tickets to prevent redundant triage."
 category = "agent-environment"
 environment_service = "tasks"
 database = "sqlite"
-originality = "Ported from the Forge task-manager example onto the two-container, MCP-served environment architecture."
+originality = "Long-horizon release blocker reconciliation scenario for the OpenGym task-manager environment."
 
 [verifier]
-timeout_sec = 180.0
+timeout_sec = 240.0
 environment_mode = "shared"
 user = "root"
 
-# Snapshot the workspace from inside the environment before teardown, so the
-# graded state is preserved as an artifact independently of the live socket.
 [[verifier.collect]]
 command = "python3 -m task_sim.admin_cli export_state --out /var/lib/tasks/state-export.json"
 service = "tasks"
@@ -49,14 +44,6 @@ cpus = 2
 memory_mb = 2048
 storage_mb = 4096
 
-# Harbor registers this with whichever agent runs the task, so the tracker
-# arrives as native tools carrying their own schemas before the first turn. The
-# prompt is the request and nothing else: finding out what is in the workspace
-# is the task, but discovering that it exists is not.
-#
-# stdio, not http: the environment runs with no network, and a subprocess on the
-# agent's side of the socket boundary needs none. The server is a client of
-# `agent.sock`; workspace state stays in its own container.
 [[environment.mcp_servers]]
 name = "tasks"
 transport = "stdio"

@@ -1,28 +1,21 @@
 Can you take ownership of the Titanium v3 enterprise release blocker reconciliation through the final go/no-go cutover decision scheduled for Friday?
 
-There have been multiple conflicting status reports and ticket updates over the last few days, and leadership does not trust the current milestone summaries. Several critical path deliverables appear blocked or deadlocked, while other tickets may have stale blocker flags or redundant duplicate bugs. I need you to audit where things actually stand across the release project (`Titanium Enterprise v3.0`, milestone `v3.0 Cutover Gate`), resolve the blocking issues you can fix, and submit a defensible terminal handover report.
+There have been multiple conflicting status reports and ticket updates over the last few days, and leadership does not trust the current milestone summaries anymore. Several critical-path deliverables appear blocked or in deadlock, while other tickets may have stale blocker flags or redundant duplicate bugs. I need you to audit where things actually stand across the release project (`Titanium Enterprise v3.0`, milestone `v3.0 Cutover Gate`), drive the remaining engineering work to resolution where you can, and submit a defensible terminal handover report based on the state when you're finished.
 
-Specifically, work through the following critical tracks:
+Make sure the cutover-critical tracks are investigated and reconciled:
 
-1. **Deadlocked Disaster Recovery Track**:
-   - `TASK043` (Backup verification and recovery drill) is blocked on `TASK044` (Snapshot rollback automation script), which is reported blocked on `TASK048` (Disaster recovery runbook validation).
-   - However, team notes show an apparent circular deadlock between `TASK044` and `TASK048`. Verify the actual runbook dependency: runbook validation only depends on the canary deployment pipeline (`TASK041`, which is already complete). Unlink the false circular dependency holding `TASK048` to `TASK044`, verify runbook validation can be completed, and advance the recovery automation scripts (`TASK044`) to completed status to unblock the recovery drill.
+- **Disaster Recovery & Rollback Automation**: The recovery drill and rollback automation are currently reported blocked due to an artificial dependency cycle between the rollback automation script and runbook validation. Team notes show that runbook validation was mistakenly recorded as depending on the rollback script, when in reality it only depends on the canary deployment pipeline (which is already completed). Unlink that false dependency holding the runbook validation to the rollback script, and advance both the runbook validation and the rollback automation script to completed so the recovery drill can proceed.
+- **Compliance & Security Gates**: The SOC2 compliance audit gate is marked blocked. Verify whether the underlying third-party vendor security attestation is completed; if satisfied, clear the stale blocker and advance the SOC2 audit gate to completed.
+- **Authentication & Critical Defects**: A severe token revocation race condition under high load was recently filed and is blocking the staging integration suite. Ensure this defect is escalated to urgent priority, assigned to Marcus Vance (Staff Security Engineer on zero-trust auth), and marked in progress so it is actively tracked.
+- **Cache Invalidation & Bug Deduplication**: Two bug tickets were recently opened for Redis connection pool timeouts and cache cluster pool exhaustion. Investigate whether these describe root causes already covered by our distributed cache invalidation task, and mark both redundant bug tickets as duplicates so engineering effort is not divided.
 
-2. **Compliance and Security Verification**:
-   - `TASK035` (SOC2 compliance audit gate) is currently marked `BLOCKED`. Investigate why: it was held for third-party vendor security attestation (`TASK047`).
-   - Verify whether `TASK047` is completed and attested. If the prerequisite is satisfied, clear the stale blocker and advance `TASK035` to `COMPLETED`.
+As things move, keep your readiness assessment current. If something that was blocked has its prerequisites verified, advance it through the proper state transitions rather than carrying stale blockers forward. Keep the critical path clear, and do not modify unrelated projects or bystander tasks outside the release scope.
 
-3. **Authentication & Session Security Escalation**:
-   - A critical race condition during token revocation under high load (`TASK042`) was recently filed and is blocking the staging end-to-end integration suite (`TASK040`).
-   - Reassign `TASK042` to Marcus Vance (`U008`, Staff Security Engineer) who owns zero-trust auth security, escalate its priority to `URGENT`, and update its status to `IN_PROGRESS` or ensure it is actively tracked.
+When you're confident the state is settled to make the call, submit a structured handover report with `submit_handover_report` containing:
+- A list of all the task IDs you reconciled (the unblocked compliance gate, the escalated auth defect, the completed runbook and rollback scripts, and the duplicate cache tickets)
+- A concise executive summary detailing:
+  - Your confirmed cutover recommendation: `READY` or `BLOCKED` (and why cutover cannot proceed yet based on the remaining in-progress work)
+  - Key blocker resolutions achieved during your investigation
+  - Remaining blockers, next critical actions, and owners
 
-4. **Cache Invalidation & Bug Deduplication**:
-   - Several bugs (`TASK051`, `TASK052`) were filed regarding cache cluster connection exhaustion and Redis pool timeouts.
-   - Investigate these against `TASK036` (Distributed cache invalidation). Both tickets describe identical root causes to `TASK036`. Mark `TASK051` and `TASK052` as duplicates of `TASK036` so engineering does not duplicate triage effort.
-
-5. **Terminal Cutover Decision & Handover Report**:
-   - Do not modify unrelated tasks outside the Titanium release scope.
-   - When you have reconciled the release state, submit a structured handover report using `submit_handover_report` recording all reconciled task IDs (`TASK035`, `TASK042`, `TASK044`, `TASK048`, `TASK051`, `TASK052`) and a concise executive summary providing:
-     - Confirmed cutover recommendation: `BLOCKED` (because core items such as staging integration and cache invalidation remain in progress before production traffic)
-     - Key blocker resolutions achieved (deadlock unlinked, compliance cleared, duplicate triage)
-     - Next critical actions and assignees for remaining work.
+Only recommend cutover if all release-critical deliverables are verified and ready.
