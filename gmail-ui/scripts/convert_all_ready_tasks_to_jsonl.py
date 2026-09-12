@@ -64,13 +64,12 @@ def main() -> int:
         print(f"Error: tasks file not found: {args.tasks_file}", file=sys.stderr)
         return 2
 
-    # Add this script directory to sys.path so we can import sibling modules
-    script_dir = os.path.dirname(__file__) or '.'
-    if script_dir not in sys.path:
-        sys.path.insert(0, script_dir)
-    # Lazy imports to avoid circulars and keep CLI snappy
-    from extract_ready_task import iterate_tasks  # type: ignore
-    import convert_task_states_to_store as cts  # type: ignore
+    try:
+        from .extract_ready_task import iterate_tasks
+        from . import convert_task_states_to_store as cts
+    except ImportError:
+        from extract_ready_task import iterate_tasks  # type: ignore
+        import convert_task_states_to_store as cts  # type: ignore
 
     def _maybe_add_ready_ids_from_record(rec: dict, out: set[str]) -> None:
         # Case 1: merged tasks where stage is nested under metadata

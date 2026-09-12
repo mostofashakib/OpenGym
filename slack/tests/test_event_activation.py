@@ -43,8 +43,6 @@ import sys
 import tempfile
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
 from event_diagnostics import (
     BEN,
     Action,
@@ -69,7 +67,7 @@ LAT021_TEXT = (
     "window and about 15 minutes of customer-visible downtime."
 )
 CANONICAL = "Nina, can you confirm whether the 9:30 request is real?"
-FIXTURES = Path(__file__).resolve().parent / "fixtures"
+FIXTURES = Path("tests/fixtures")
 
 
 def _timing_probe(workspace: Workspace):

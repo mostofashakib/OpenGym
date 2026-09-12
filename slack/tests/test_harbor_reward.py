@@ -18,9 +18,6 @@ import sys
 import tempfile
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-
 import dynamic_scenario as scenario
 import test_migration_readiness as entry
 from slack_sim.service import export_state

@@ -43,8 +43,6 @@ import sys
 import tempfile
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
 from event_diagnostics import (
     BEN,
     Action,
@@ -53,15 +51,10 @@ from event_diagnostics import (
     assert_observable_everywhere,
     render_evaluation,
 )
-from event_audit import EVENTS, extract_slack_actions
-from slack_sim.seed import SCENARIO_RULES
 
 NINA = "U046"
-SAM = "U019"
 ACME = "C019"
 BRIDGE = "C024"
-DEBUG = "C023"
-DATA = "C021"
 SUPPORT = "C022"
 LAT021_TEXT = (
     "Confirmed directly with Acme: 9:30 PM was only their VP asking a question, not a change "
@@ -69,7 +62,7 @@ LAT021_TEXT = (
     "window and about 15 minutes of customer-visible downtime."
 )
 CANONICAL = "Nina, can you confirm whether the 9:30 request is real?"
-FIXTURES = Path(__file__).resolve().parent / "fixtures"
+FIXTURES = Path("tests/fixtures")
 
 
 def _timing_probe(workspace: Workspace):

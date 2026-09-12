@@ -32,8 +32,6 @@ import sys
 import tempfile
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
 from event_diagnostics import Workspace, render_evaluation
 
 BRIDGE = "C024"

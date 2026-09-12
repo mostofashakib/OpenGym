@@ -149,12 +149,10 @@ def query_rows(
     return [dict(row) for row in connection.execute(sql, params).fetchall()]
 
 
-def remove_pycaches() -> None:
+def remove_pycaches(root: Path | None = None) -> None:
     """Drop bytecode caches so container resets leave no stray filesystem state."""
-    root = Path("/app")
-    if not root.is_dir():
-        root = Path(__file__).resolve().parents[2]
-    for current, dirs, files in os.walk(root, topdown=False):
+    target_root = root or (Path("/app") if Path("/app").is_dir() else Path.cwd())
+    for current, dirs, files in os.walk(target_root, topdown=False):
         for name in dirs:
             if name == "__pycache__":
                 try:

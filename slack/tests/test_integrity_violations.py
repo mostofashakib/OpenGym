@@ -19,9 +19,6 @@ import sys
 import tempfile
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-
 import dynamic_scenario as scenario
 import reward_episodes as episodes
 from slack_sim.server import AGENT_OPS, WorldService, _dispatch
@@ -184,7 +181,7 @@ def test_the_image_keeps_the_grading_side_out_of_reach(root: Path) -> None:
     Dockerfile line each -- exactly the kind of thing a later edit removes
     without anyone noticing.
     """
-    dockerfile = Path(__file__).resolve().parent.parent / "environment" / "Dockerfile"
+    dockerfile = Path("environment/Dockerfile")
     if not dockerfile.is_file():  # running from inside the image
         return
     text = dockerfile.read_text(encoding="utf-8")
@@ -196,8 +193,7 @@ def test_the_image_keeps_the_grading_side_out_of_reach(root: Path) -> None:
 def test_the_privileged_socket_is_created_unreadable(root: Path) -> None:
     from slack_sim.server import ADMIN_OPS, AGENT_OPS
 
-    source = (Path(__file__).resolve().parent.parent / "environment" / "slack_sim"
-              / "server.py")
+    source = Path("environment/slack_sim/server.py")
     if not source.is_file():
         return
     text = source.read_text(encoding="utf-8")

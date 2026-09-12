@@ -66,7 +66,7 @@ def main(argv: list[str] | None = None) -> int:
 
     instruction = args.instruction
     if not instruction:
-        instruction_file = Path(__file__).resolve().parent.parent / "instruction.md"
+        instruction_file = Path.cwd() / "instruction.md"
         if instruction_file.is_file():
             instruction = instruction_file.read_text(encoding="utf-8").strip()
         else:

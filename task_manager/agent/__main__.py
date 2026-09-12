@@ -35,7 +35,7 @@ from agent.prompts import DEFAULT_PROMPT_ID, system_prompt
 from agent.providers import ProviderError, provider_names
 from agent.trajectory import build_trajectory, write_trajectory
 
-TASK_ROOT = Path(__file__).resolve().parent.parent
+TASK_ROOT = Path.cwd()
 
 
 def _build_parser() -> argparse.ArgumentParser:

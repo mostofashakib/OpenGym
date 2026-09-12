@@ -207,7 +207,7 @@ def test_the_auditor_flags_a_pass_that_skipped_milestones() -> None:
 
 def test_no_grading_module_reads_the_agents_own_files() -> None:
     """The trajectory the agent writes is evidence written by the graded party."""
-    root = Path(__file__).resolve().parents[1] / "verifiers"
+    root = Path.cwd() / "verifiers"
     needles = ("/logs/agent", "trajectory.json", "trajectory.txt")
     offenders = []
     for path in sorted(root.rglob("*.py")):
@@ -232,7 +232,7 @@ def test_no_grading_module_reads_the_agents_own_files() -> None:
 
 
 def test_the_contract_is_the_only_module_that_knows_the_task() -> None:
-    root = Path(__file__).resolve().parents[1] / "verifiers"
+    root = Path.cwd() / "verifiers"
     offenders = []
     for path in sorted(root.glob("*.py")):
         tree = ast.parse(path.read_text(encoding="utf-8"))

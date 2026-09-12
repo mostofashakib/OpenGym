@@ -8,10 +8,8 @@ import sys
 import tempfile
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tests"))
-
-import grader_audit  # noqa: E402
-from workspace import ORACLE_STEPS, Workspace, run_steps  # noqa: E402
+import grader_audit
+from workspace import ORACLE_STEPS, Workspace, run_steps
 
 FAILURES: list[str] = []
 
@@ -100,7 +98,7 @@ def test_an_unreadable_model_answer_is_not_a_clean_bill_of_health() -> None:
 
 
 def test_the_grader_cannot_depend_on_its_auditor() -> None:
-    root = Path(__file__).resolve().parents[1] / "verifiers"
+    root = Path.cwd() / "verifiers"
     offenders = [
         path.name for path in root.rglob("*.py")
         if "grader_audit" in path.read_text(encoding="utf-8")

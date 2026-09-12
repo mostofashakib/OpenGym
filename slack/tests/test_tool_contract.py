@@ -17,8 +17,6 @@ import sys
 import tempfile
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
 import slack_sim.service
 from slack_sim.identity import LOGGED_IN_USER
 from slack_sim.seed import (

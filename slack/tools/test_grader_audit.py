@@ -14,10 +14,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT))
-sys.path.insert(0, str(ROOT / "environment"))
-sys.path.insert(0, str(ROOT / "tools"))
+ROOT = Path.cwd()
 
 import grader_audit as audit
 from verifiers.episode import Episode

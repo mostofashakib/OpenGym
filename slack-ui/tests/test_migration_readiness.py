@@ -24,7 +24,6 @@ import os
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
 # The full simulator ships root-only at /opt/grading so the verifier can derive
 # ground truth from the seed. Add it here rather than relying on the caller's
 # PYTHONPATH: a verifier that dies on an import writes no reward at all.

@@ -21,7 +21,7 @@ from workspace import ORACLE_STEPS, Workspace, run_steps
 FAILURES: list[str] = []
 SKIPPED = 0
 CONTRACT = build_contract()
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path.cwd()
 #: The Dockerfile is not uploaded to /tests, so the two checks that read it are
 #: authoring-time guards: they pin the modes from a checkout and skip in the
 #: image, where the modes they describe are already in force.

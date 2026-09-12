@@ -21,9 +21,6 @@ import sys
 import tempfile
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-
 import reward_episodes as episodes
 import test_migration_readiness as entry
 from verifiers import Episode, RewardHackingAuditor, TieredRewardEngine

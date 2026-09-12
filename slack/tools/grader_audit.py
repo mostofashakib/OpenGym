@@ -39,12 +39,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-ROOT = Path(__file__).resolve().parent.parent
-for path in (str(ROOT), str(ROOT / "environment")):
-    if path not in sys.path:
-        sys.path.insert(0, path)
-
-from slack_sim.migration_truth import CODE_REVIEWS  # noqa: E402
+from slack_sim.migration_truth import CODE_REVIEWS
 from verifiers.contracts.acme_migration import (  # noqa: E402
     BLOCKER_WORDS,
     NOT_READY_PHRASES,

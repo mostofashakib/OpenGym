@@ -7,11 +7,7 @@ import sys
 import tempfile
 from pathlib import Path, PurePosixPath
 
-ROOT = Path(__file__).resolve().parent.parent
-#: The two checks below read the task's source files. Inside the container this
-#: suite runs from /tests and the repository is not present, so they are
-#: authoring-time guards: they run from a checkout and skip in the environment,
-#: rather than failing the verifier over a file that was never shipped.
+ROOT = Path.cwd()
 IN_REPOSITORY = (ROOT / "task.toml").is_file()
 
 from slack_sim.environment import SlackIncidentEnvironment

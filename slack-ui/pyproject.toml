@@ -17,3 +17,8 @@ packages = ["agent", "slack_sim", "tools", "verifiers", "verifiers.contracts"]
 
 [tool.setuptools.package-dir]
 slack_sim = "environment/slack_sim"
+
+[tool.pytest.ini_options]
+pythonpath = ["environment", ".", "tests"]
+testpaths = ["tests"]
+

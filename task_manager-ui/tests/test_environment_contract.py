@@ -15,7 +15,7 @@ from pathlib import Path
 
 FAILURES: list[str] = []
 SKIPPED = 0
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path.cwd()
 
 #: Authoring-time guards. Harbor uploads only `tests/` to /tests, so task.toml,
 #: the Dockerfile and the instruction are not in the graded image -- and a suite

@@ -17,3 +17,8 @@ packages = ["agent", "task_sim", "tools", "verifiers", "verifiers.contracts"]
 
 [tool.setuptools.package-dir]
 task_sim = "environment/task_sim"
+
+[tool.pytest.ini_options]
+pythonpath = ["environment", ".", "tests"]
+testpaths = ["tests"]
+
