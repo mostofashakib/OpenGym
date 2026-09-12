@@ -51,10 +51,15 @@ from event_diagnostics import (
     assert_observable_everywhere,
     render_evaluation,
 )
+from event_audit import EVENTS, extract_slack_actions
+from slack_sim.seed import SCENARIO_RULES
 
 NINA = "U046"
+SAM = "U019"
 ACME = "C019"
 BRIDGE = "C024"
+DEBUG = "C023"
+DATA = "C021"
 SUPPORT = "C022"
 LAT021_TEXT = (
     "Confirmed directly with Acme: 9:30 PM was only their VP asking a question, not a change "

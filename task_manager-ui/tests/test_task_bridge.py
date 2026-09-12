@@ -3,15 +3,18 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import unittest
+
+ENV = {**os.environ, "PYTHONPATH": f"environment:{os.environ.get('PYTHONPATH', '')}"}
 
 
 class TestTaskBridge(unittest.TestCase):
     def test_list_projects(self):
         cmd = [sys.executable, "-m", "scripts.task_bridge", "list_projects"]
-        res = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        res = subprocess.run(cmd, capture_output=True, text=True, check=True, env=ENV)
         data = json.loads(res.stdout)
         self.assertIn("projects", data)
         names = [p["name"] for p in data["projects"]]
@@ -25,7 +28,7 @@ class TestTaskBridge(unittest.TestCase):
             "list_tasks",
             json.dumps({"project_id": "P005"}),
         ]
-        res = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        res = subprocess.run(cmd, capture_output=True, text=True, check=True, env=ENV)
         data = json.loads(res.stdout)
         self.assertIn("tasks", data)
         self.assertTrue(len(data["tasks"]) > 0)
@@ -41,7 +44,7 @@ class TestTaskBridge(unittest.TestCase):
             "get_task",
             json.dumps({"task_id": "TASK037"}),
         ]
-        res = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        res = subprocess.run(cmd, capture_output=True, text=True, check=True, env=ENV)
         data = json.loads(res.stdout)
         self.assertIn("task", data)
         self.assertEqual(data["task"]["task_id"], "TASK037")
