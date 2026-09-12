@@ -13,13 +13,24 @@ set -uo pipefail
 # /opt/grading holds the full simulator and the verifier package, readable only
 # by root; /opt holds the agent's client-only package. Order matters: the
 # verifier needs the full one.
-export PYTHONPATH=/opt/grading:/opt:/tests
-mkdir -p /logs/verifier
+if [ -d "/tests" ]; then
+  export PYTHONPATH="/opt/grading:/opt:/tests"
+  TESTS_DIR="/tests"
+  LOGS_DIR="/logs/verifier"
+else
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+  TESTS_DIR="$SCRIPT_DIR/tests"
+  LOGS_DIR="${LOGS_DIR:-$SCRIPT_DIR/logs/verifier}"
+  export PYTHONPATH="$SCRIPT_DIR:$SCRIPT_DIR/environment:$SCRIPT_DIR/tools:$SCRIPT_DIR/agent:$SCRIPT_DIR/verifiers:$TESTS_DIR:${PYTHONPATH:-}"
+fi
+
+mkdir -p "$LOGS_DIR"
+export TASK_REWARD_DIR="$LOGS_DIR"
 
 selftest_status=0
 for suite in test_virtual_clock test_scenario_engine test_slack_surface test_mcp_server test_event_activation test_trigger_fairness test_verifiers test_harbor_reward test_reward_validation test_reward_matrix test_integrity_violations test_migration_fixture test_migration_reward test_tool_contract test_rl_contract test_agent_adapters test_environment_contract; do
   echo "--- ${suite} ---"
-  if ! python3 "/tests/${suite}.py"; then
+  if ! python3 "${TESTS_DIR}/${suite}.py"; then
     echo "SELF-TEST FAILED: ${suite}" >&2
     selftest_status=1
   fi
@@ -27,7 +38,7 @@ done
 
 # The graded outcome always runs, and always writes a reward.
 export TASK_SELFTEST_STATUS="${selftest_status}"
-python3 /tests/test_migration_readiness.py
+python3 "${TESTS_DIR}/test_migration_readiness.py"
 verifier_status=$?
 
 if [ "${selftest_status}" -ne 0 ]; then

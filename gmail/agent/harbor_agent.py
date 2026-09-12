@@ -8,13 +8,24 @@ Translates between Harbor's agent protocol and the plain loop in :mod:`agent.loo
 from __future__ import annotations
 
 import json
-import logging
 from pathlib import Path
 from typing import Any
 
-from harbor.agents.base import BaseAgent
-from harbor.environments.base import BaseEnvironment
-from harbor.models.agent.context import AgentContext
+try:
+    from harbor.agents.base import BaseAgent
+    from harbor.environments.base import BaseEnvironment
+    from harbor.models.agent.context import AgentContext
+except ImportError:
+    class BaseAgent:  # type: ignore[no-redef]
+        def __init__(self, logs_dir: Path | None = None, model_name: str | None = None, *args: Any, **kwargs: Any) -> None:
+            self.logs_dir = Path(logs_dir) if logs_dir else Path(".")
+            self.model_name = model_name
+
+    class BaseEnvironment:  # type: ignore[no-redef]
+        pass
+
+    class AgentContext:  # type: ignore[no-redef]
+        pass
 
 from agent.backends import HarborBackend
 from agent.config import AgentConfig

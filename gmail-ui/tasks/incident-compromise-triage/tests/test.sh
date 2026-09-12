@@ -9,9 +9,10 @@ if [ -d "/tests" ]; then
   SUITES=(test_mcp_server test_verifiers test_gmail_sim test_rl_env test_end_to_end)
 else
   SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+  ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
   TESTS_DIR="$SCRIPT_DIR/tests"
   LOGS_DIR="${LOGS_DIR:-$SCRIPT_DIR/logs/verifier}"
-  export PYTHONPATH="$SCRIPT_DIR:$SCRIPT_DIR/environment:$SCRIPT_DIR/tests:${PYTHONPATH:-}"
+  export PYTHONPATH="$ROOT_DIR:$ROOT_DIR/environment:$ROOT_DIR/tools:$ROOT_DIR/agent:$ROOT_DIR/verifiers:$SCRIPT_DIR:$SCRIPT_DIR/environment:$SCRIPT_DIR/tests:${PYTHONPATH:-}"
   SUITES=(test_agent_adapters test_mcp_server test_verifiers test_gmail_sim test_rl_env test_end_to_end)
 fi
 

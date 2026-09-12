@@ -17,11 +17,29 @@ cares about intact: the agent still reaches the workspace only through the
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, override
+from typing import Any
 
-from harbor.agents.base import BaseAgent
-from harbor.environments.base import BaseEnvironment
-from harbor.models.agent.context import AgentContext
+try:
+    from typing import override
+except ImportError:
+    def override(func: Any) -> Any:  # type: ignore[misc]
+        return func
+
+try:
+    from harbor.agents.base import BaseAgent
+    from harbor.environments.base import BaseEnvironment
+    from harbor.models.agent.context import AgentContext
+except ImportError:
+    class BaseAgent:  # type: ignore[no-redef]
+        def __init__(self, logs_dir: Path | None = None, model_name: str | None = None, *args: Any, **kwargs: Any) -> None:
+            self.logs_dir = Path(logs_dir) if logs_dir else Path(".")
+            self.model_name = model_name
+
+    class BaseEnvironment:  # type: ignore[no-redef]
+        pass
+
+    class AgentContext:  # type: ignore[no-redef]
+        pass
 
 from agent.backends import HarborBackend
 from agent.config import AgentConfig
@@ -44,7 +62,7 @@ class TrackerAgent(BaseAgent):
 
     ``-m`` is the whole of the switch: ``ollama/qwen3.6:35b`` (the default),
     ``openrouter/anthropic/claude-opus-5``, ``anthropic/claude-opus-5``,
-    ``openai/gpt-5``, or a bare model name for Ollama. Anything else is an
+    ``custom-provider/custom-model``, or a bare model name for Ollama. Anything else is an
     ``--ak key=value``; the accepted keys are the fields of
     :class:`agent.config.AgentConfig`.
     """

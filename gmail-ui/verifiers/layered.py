@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import os
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from tools.gmail_client import GmailClient
+if TYPE_CHECKING:
+    from tools.gmail_client import GmailClient
+
 from verifiers.auditor import audit_run
 from verifiers.checks import _load_state, evaluate_compromise_triage_task, evaluate_triage_task
 from verifiers.results import (

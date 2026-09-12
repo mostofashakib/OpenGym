@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-import json
 import random
-import sqlite3
 from pathlib import Path
 
 from gmail_sim.clock import init_clock
@@ -342,7 +340,7 @@ def seed_database(db_path: Path | str, snapshot_path: Path | str | None = None, 
                 'MSG_NEWS_010', 'T_NEWS_10', 'newsletter@techtrends-digest.com',
                 '["you@example.com"]', '[]', '[]',
                 'TechTrends Weekly: Zero-Trust Architecture Patterns in 2030',
-                'In this week issue: emerging trends in micro-segmentation, identity-first perimeter defense, and cloud compliance orchestration.',
+                "In this week's issue: emerging trends in micro-segmentation, identity-first perimeter defense, and cloud compliance orchestration.",
                 '<p>TechTrends Weekly dispatch on zero-trust patterns.</p>',
                 '2030-03-13T12:00:00-05:00',
                 1, 0, 0, 0, 0, NULL, '["INBOX"]'

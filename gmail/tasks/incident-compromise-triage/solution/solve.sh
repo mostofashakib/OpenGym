@@ -6,7 +6,8 @@ if [ -d "/tests" ] || [ -d "/opt/grading" ]; then
   export PYTHONPATH="/opt/grading:/opt/grading/verifiers:/opt/tools:/opt/agent:/opt:${PYTHONPATH:-}"
 else
   SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-  export PYTHONPATH="$SCRIPT_DIR:$SCRIPT_DIR/environment:$SCRIPT_DIR/tools:${PYTHONPATH:+:$PYTHONPATH}"
+  ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+  export PYTHONPATH="$ROOT_DIR:$ROOT_DIR/environment:$ROOT_DIR/tools:$ROOT_DIR/agent:$ROOT_DIR/verifiers:$SCRIPT_DIR:$SCRIPT_DIR/environment:$SCRIPT_DIR/tools:${PYTHONPATH:+:$PYTHONPATH}"
 fi
 
 python3 - <<'EOF'
