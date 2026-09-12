@@ -12,12 +12,12 @@ Developed by [Mostofa Shakib](https://www.mostofashakib.com/).
 
 ## Environments
 
-| Environment | Mode | Difficulty | What the agent must do |
-|---|---|---|---|
-| [`gmail/`](gmail/) | **Headless** (CLI / FastMCP) | Hard | Triage vendor compromise disclosure and targeted spear-phishing: uncover critical API credential leak (`KEY_PROD_SEC_8821`), quarantine deceptive phishing vectors to trash/spam, enforce legal compliance holds, and draft multi-stakeholder formal regulatory disclosures and executive briefings. |
-| [`gmail-ui/`](gmail-ui/) | **Full UI** (Next.js / Web) | Hard | Full-featured interactive Next.js web application frontend and REST API for the email incident triage environment, suitable for human visual inspection, browser-use agents, and multimodal evaluation. |
-| [`slack/`](slack/) | **Headless** (CLI / FastMCP) | Hard | Drive an enterprise Acme migration cutover through staged reviews in `#debugging`: discover unstated blockers, verify cross-border data integrity and latency bounds, resolve circular dependencies, and submit a defensible go/no-go readiness assessment. |
-| [`task_manager/`](task_manager/) | **Headless** (CLI / FastMCP) | Hard | Reconcile release candidate deployment blockers across 55 tasks: uncover circular dependencies, reassign overloaded engineers, verify compliance and migration gating, and submit an auditable sign-off report without disturbing stable tasks. |
+| Environment | Mode | What the agent must do |
+|---|---|---|
+| [`gmail/`](gmail/) | **Headless** (CLI / FastMCP) | Triage vendor compromise disclosure and targeted spear-phishing: uncover critical API credential leak (`KEY_PROD_SEC_8821`), quarantine deceptive phishing vectors to trash/spam, enforce legal compliance holds, and draft multi-stakeholder formal regulatory disclosures and executive briefings. |
+| [`gmail-ui/`](gmail-ui/) | **Full UI** (Next.js / Web) | Full-featured interactive Next.js web application frontend and REST API for the email incident triage environment, suitable for human visual inspection, browser-use agents, and multimodal evaluation. |
+| [`slack/`](slack/) | **Headless** (CLI / FastMCP) | Drive an enterprise Acme migration cutover through staged reviews in `#debugging`: discover unstated blockers, verify cross-border data integrity and latency bounds, resolve circular dependencies, and submit a defensible go/no-go readiness assessment. |
+| [`task_manager/`](task_manager/) | **Headless** (CLI / FastMCP) | Reconcile release candidate deployment blockers across 55 tasks: uncover circular dependencies, reassign overloaded engineers, verify compliance and migration gating, and submit an auditable sign-off report without disturbing stable tasks. |
 
 Each directory is a fully self-contained environment — `task.toml`, Docker environment, reference solution, test suites, and layered verifiers. There is no shared package between them.
 
