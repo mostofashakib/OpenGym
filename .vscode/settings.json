@@ -1,0 +1,12 @@
+{
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/gmail",
+    "${workspaceFolder}/gmail/environment",
+    "${workspaceFolder}/gmail-ui",
+    "${workspaceFolder}/gmail-ui/environment",
+    "${workspaceFolder}/slack",
+    "${workspaceFolder}/slack/environment",
+    "${workspaceFolder}/task_manager",
+    "${workspaceFolder}/task_manager/environment"
+  ]
+}
