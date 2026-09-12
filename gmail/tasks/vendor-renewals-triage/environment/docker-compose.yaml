@@ -1,0 +1,28 @@
+services:
+  main:
+    build:
+      context: ../../..
+      dockerfile: environment/Dockerfile
+      target: agent
+    volumes:
+      - gmail-ipc:/run/gmail
+    depends_on:
+      gmail:
+        condition: service_healthy
+
+  gmail:
+    build:
+      context: ../../..
+      dockerfile: environment/Dockerfile
+      target: world
+    volumes:
+      - gmail-ipc:/run/gmail
+    healthcheck:
+      test: ["CMD", "python3", "-m", "gmail_sim.admin_cli", "ping"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+      start_period: 2s
+
+volumes:
+  gmail-ipc:

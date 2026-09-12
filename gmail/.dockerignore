@@ -1,0 +1,13 @@
+**/__pycache__
+**/*.pyc
+.git
+.venv
+jobs
+instruction.md
+solution
+README.md
+run.sh
+kill.sh
+view.sh
+analyze.sh
+audit.sh

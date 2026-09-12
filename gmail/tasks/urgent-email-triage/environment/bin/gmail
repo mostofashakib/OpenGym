@@ -1,0 +1,4 @@
+#!/bin/sh
+# The agent's interface to the Gmail environment. The environment itself runs
+# in another container; this is a client and holds no state.
+exec python3 -m gmail_sim.agent_cli "$@"

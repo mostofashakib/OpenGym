@@ -1,0 +1,10 @@
+#!/bin/sh
+# Runs as root only long enough to take ownership of the socket directory,
+# then drops to gmaild for the life of the process. The workspace database is
+# never touched by a privileged process after this point.
+set -eu
+install -d -o gmaild -g gmaild -m 0755 /run/gmail
+exec setpriv --reuid=gmaild --regid=gmaild --clear-groups \
+     python3 -m gmail_sim.server \
+       --db /var/lib/gmail/gmail.db \
+       --snapshot /var/lib/gmail/gmail_seed_snapshot.sql

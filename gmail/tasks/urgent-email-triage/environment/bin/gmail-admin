@@ -1,0 +1,4 @@
+#!/bin/sh
+# Privileged environment operations. Reaches admin.sock, which is mode 0600 and
+# owned by gmaild, so an unprivileged caller gets EACCES.
+exec python3 -m gmail_sim.admin_cli "$@"
