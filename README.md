@@ -8,6 +8,8 @@ OpenGym is designed for researchers, engineers, and hobbyists who want realistic
 
 Developed by [Mostofa Shakib](https://www.mostofashakib.com/).
 
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
+
 ---
 
 ## Environments
@@ -199,5 +201,9 @@ Or in plain text:
 ---
 
 ## License
-
-MIT
+ 
+This project is licensed under the **[GNU Affero General Public License v3.0](LICENSE)** (GNU AGPLv3).
+ 
+> **OpenGym is copyleft software.** Under the AGPLv3:
+> - Any modified versions, derivative works, or services powered by OpenGym running over a network (e.g., cloud benchmark platforms, evaluation APIs, web UIs) **must make their complete corresponding source code publicly available under the AGPLv3**.
+> - All original copyright notices, legal notices, and author attributions to **Mostofa Shakib** must be preserved intact.
