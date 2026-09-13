@@ -1,0 +1,50 @@
+schema_version = "1.4"
+artifacts = [
+  { source = "/logs/agent", exclude = ["sessions"] },
+  { source = "/var/lib/workstation/state-export.json", service = "workstation" },
+]
+
+[task]
+name = "opengym/workstation-account-cancellation-refund"
+version = "1.0.0"
+description = "Simulate a complete employee workstation: investigate an urgent account cancellation email, verify signed contracts in Drive, consult SOP policies in Knowledge Base, inspect billing invoices, calculate allowed pro-rated refunds, execute the refund transaction, update CRM customer records, resolve support tickets, send confirmation emails, and schedule post-churn debrief meetings."
+authors = [{ name = "Mostofa Shakib" }]
+keywords = ["workstation", "long-horizon", "cross-application", "computer-use", "mcp", "crm", "billing", "email", "calendar", "files", "harbor", "rl-environment"]
+
+[metadata]
+difficulty = "hard"
+difficulty_explanation = "Requires multi-application reasoning across 500 emails, 1,000 files, 200 customers, and 200 invoices. The agent must resolve contract ambiguity (distinguishing active 2026 amendment from superseded 2023 terms), verify policy formulas, calculate exact integer-cent pro-rata amounts, update CRM status, issue financial refunds, send multi-recipient confirmation emails, and schedule debrief meetings without accessing unauthorized records."
+category = "agent-environment"
+environment_service = "workstation"
+database = "sqlite"
+originality = "Built as an authoritative long-horizon simulated employee workstation environment for OpenGym."
+
+[verifier]
+timeout_sec = 240.0
+environment_mode = "shared"
+user = "root"
+
+[[verifier.collect]]
+command = "python3 -m workstation_sim.admin_cli export_state --out /var/lib/workstation/state-export.json"
+service = "workstation"
+timeout_sec = 60.0
+user = "root"
+
+[agent]
+timeout_sec = 1200.0
+user = "agent"
+network_mode = "allowlist"
+allowed_hosts = ["openrouter.ai"]
+
+[environment]
+network_mode = "no-network"
+build_timeout_sec = 900.0
+os = "linux"
+cpus = 2
+memory_mb = 2048
+storage_mb = 4096
+
+[[environment.mcp_servers]]
+name = "workstation"
+transport = "stdio"
+command = "python3 -m workstation_sim.mcp_server"

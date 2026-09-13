@@ -1,0 +1,37 @@
+schema_version = "1.4"
+
+[task]
+name = "opengym/enterprise-ui"
+version = "1.0.0"
+description = "Apex Enterprise Cloud Unified Operations Console connecting 11 interconnected enterprise systems with financial governance and DLP."
+authors = [{ name = "Mostofa Shakib" }]
+keywords = ["enterprise", "crm", "support", "billing", "refunds", "sla", "dlp", "mcp", "harbor"]
+
+[metadata]
+difficulty = "hard"
+category = "enterprise-ui"
+environment_service = "enterprise-ui"
+database = "sqlite"
+
+[verifier]
+timeout_sec = 180.0
+environment_mode = "shared"
+user = "root"
+
+[[verifier.collect]]
+command = "python3 -m enterprise_sim.admin_cli export_state --out /var/lib/enterprise/state-export.json"
+service = "enterprise"
+timeout_sec = 30.0
+
+[agent]
+timeout_sec = 1200.0
+user = "agent"
+
+[environment]
+os = "linux"
+cpus = 2
+memory_mb = 4096
+storage_mb = 8192
+
+[ports]
+web_ui = 3005

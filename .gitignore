@@ -234,6 +234,12 @@ trajectory.txt
 oracle.txt
 
 # Node.js and Next.js artifacts
+node_modules
 node_modules/
+.next
 .next/
 .DS_Store
+
+# Engineering standards documentation
+engineering_standards.md
+ENGINEERING_STANDARDS.md

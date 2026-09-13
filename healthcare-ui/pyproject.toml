@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "healthcare-ui"
+version = "1.0.0"
+description = "Aegis Health Clinical EHR UI environment and Harbor evaluation workspace"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pytest>=8.0.0",
+    "mcp>=1.0.0",
+]
+
+[tool.setuptools]
+packages = ["healthcare_sim", "tools", "verifiers", "solution"]
+
+[tool.setuptools.package-dir]
+healthcare_sim = "environment/healthcare_sim"
+
+[tool.pytest.ini_options]
+pythonpath = ["environment", ".", "tests"]
+testpaths = ["tests"]

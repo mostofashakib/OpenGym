@@ -1,0 +1,50 @@
+schema_version = "1.4"
+artifacts = [
+  { source = "/logs/agent", exclude = ["sessions"] },
+  { source = "/var/lib/enterprise/state-export.json", service = "enterprise" },
+]
+
+[task]
+name = "forge/enterprise-agent-simulation"
+version = "1.0.0"
+description = "Execute complex cross-system business workflows across 11 enterprise simulators (Email, Calendar, Chat, CRM, Support, Storage, Billing, Projects, Knowledge, HR, APIs) under strict policy rules and approval gates."
+authors = [{ name = "Mostofa Shakib" }]
+keywords = ["enterprise", "cross-system", "workflows", "policy-engine", "approvals", "dlp", "crm", "billing", "support", "sqlite", "mcp", "harbor", "rl-environment"]
+
+[metadata]
+difficulty = "hard"
+difficulty_explanation = "Requires coordinating cross-system workflows spanning support tickets, CRM records, billing invoices, customer contracts, and email notifications while respecting financial authorization limits, manager approval requirements, data loss prevention (DLP) rules, and handling asynchronous actors and adversarial prompt injections."
+category = "agent-environment"
+environment_service = "enterprise"
+database = "sqlite"
+originality = "Enterprise digital twin modeling a complete 100-employee, 1,000-customer organization with 11 connected simulators, declarative workflow engine, dynamic external actors, and dual-dimension policy verifier."
+
+[verifier]
+timeout_sec = 180.0
+environment_mode = "shared"
+user = "root"
+
+[[verifier.collect]]
+command = "python3 -m enterprise_sim.admin_cli export --db-path /var/lib/enterprise/company.db --out /var/lib/enterprise/state-export.json"
+service = "enterprise"
+timeout_sec = 60.0
+user = "root"
+
+[agent]
+timeout_sec = 1200.0
+user = "agent"
+network_mode = "allowlist"
+allowed_hosts = ["openrouter.ai"]
+
+[environment]
+network_mode = "no-network"
+build_timeout_sec = 600.0
+os = "linux"
+cpus = 2
+memory_mb = 2048
+storage_mb = 4096
+
+[[environment.mcp_servers]]
+name = "enterprise"
+transport = "stdio"
+command = "/usr/local/bin/enterprise-mcp"

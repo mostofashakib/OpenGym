@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "workstation"
+version = "0.1.0"
+description = "Long-Horizon Multi-Application Employee Workstation Environment for OpenGym"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "harbor>=0.22.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["workstation_sim*", "tools*", "verifiers*", "solution*"]
+
+[tool.setuptools.package-dir]
+workstation_sim = "environment/workstation_sim"

@@ -1,0 +1,22 @@
+[project]
+name = "healthcare-sim"
+version = "1.0.0"
+description = "Synthetic Healthcare Agent Simulation Environment for OpenGym"
+authors = [{ name = "Mostofa Shakib" }]
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.0.0",
+    "mcp>=1.0.0",
+    "faker>=25.0.0",
+    "pytest>=8.0.0",
+    "respx>=0.21.0",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [".", "environment"]
+asyncio_mode = "strict"

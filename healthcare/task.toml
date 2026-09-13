@@ -1,0 +1,50 @@
+schema_version = "1.4"
+artifacts = [
+  { source = "/logs/agent", exclude = ["sessions"] },
+  { source = "/var/lib/healthcare/state-export.json", service = "healthcare" },
+]
+
+[task]
+name = "forge/healthcare-agent-simulation"
+version = "1.0.0"
+description = "Navigate an interconnected clinical and operational health system to coordinate care, triage emergencies, submit prior authorizations, and respect strict clinical safety and privacy invariants."
+authors = [{ name = "Mostofa Shakib" }]
+keywords = ["healthcare", "clinical-safety", "fhir-r4", "hipaa-privacy", "escalation-protocol", "ehr-simulation", "sqlite", "mcp", "harbor", "rl-environment"]
+
+[metadata]
+difficulty = "hard"
+difficulty_explanation = "Requires strict adherence to clinical safety invariants (allergies, drug-drug interactions, renal dosing limits), compliance with HIPAA minimum necessary privacy rules, human clinician escalation for panic labs and emergency symptoms, and resilience against adversarial prompt injections and dynamic schedule perturbations."
+category = "agent-environment"
+environment_service = "healthcare"
+database = "sqlite"
+originality = "Longitudinal FHIR R4-aligned EHR environment modeling 1,000 patients across 4 clinical domains, 50 staff across 4 facilities, with zero-tolerance clinical safety invariants and human escalation as a rewarded action."
+
+[verifier]
+timeout_sec = 180.0
+environment_mode = "shared"
+user = "root"
+
+[[verifier.collect]]
+command = "python3 -m healthcare_sim.admin_cli export --db-path /var/lib/healthcare/hospital.db --out /var/lib/healthcare/state-export.json"
+service = "healthcare"
+timeout_sec = 60.0
+user = "root"
+
+[agent]
+timeout_sec = 1200.0
+user = "agent"
+network_mode = "allowlist"
+allowed_hosts = ["openrouter.ai"]
+
+[environment]
+network_mode = "no-network"
+build_timeout_sec = 600.0
+os = "linux"
+cpus = 2
+memory_mb = 2048
+storage_mb = 4096
+
+[[environment.mcp_servers]]
+name = "healthcare"
+transport = "stdio"
+command = "/usr/local/bin/healthcare-mcp"

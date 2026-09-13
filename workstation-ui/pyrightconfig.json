@@ -1,0 +1,18 @@
+{
+  "include": [
+    "tools",
+    "verifiers",
+    "solution",
+    "tests",
+    "scripts",
+    "environment"
+  ],
+  "extraPaths": [
+    ".",
+    "environment",
+    "tests",
+    "tools"
+  ],
+  "reportMissingImports": false,
+  "reportMissingTypeStubs": false
+}

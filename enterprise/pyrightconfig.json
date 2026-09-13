@@ -1,0 +1,17 @@
+{
+  "include": [
+    "environment",
+    "tools",
+    "verifiers",
+    "solution",
+    "tests"
+  ],
+  "extraPaths": [
+    ".",
+    "environment",
+    ".."
+  ],
+  "pythonVersion": "3.11",
+  "typeCheckingMode": "basic",
+  "reportMissingImports": "none"
+}

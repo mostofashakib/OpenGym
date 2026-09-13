@@ -1,0 +1,13 @@
+{
+  "include": [
+    ".",
+    "environment"
+  ],
+  "extraPaths": [
+    ".",
+    "..",
+    "environment"
+  ],
+  "reportMissingImports": "none",
+  "pythonVersion": "3.11"
+}

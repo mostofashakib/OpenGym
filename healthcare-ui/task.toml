@@ -1,0 +1,37 @@
+schema_version = "1.4"
+
+[task]
+name = "opengym/healthcare-ui"
+version = "1.0.0"
+description = "Aegis Health Clinical EHR with FHIR R4 data models, zero-tolerance medication safety invariants, and HIPAA compliance audit."
+authors = [{ name = "Mostofa Shakib" }]
+keywords = ["healthcare", "ehr", "fhir", "patient-safety", "drug-interactions", "hipaa", "mcp", "harbor"]
+
+[metadata]
+difficulty = "hard"
+category = "healthcare-ui"
+environment_service = "healthcare-ui"
+database = "sqlite"
+
+[verifier]
+timeout_sec = 180.0
+environment_mode = "shared"
+user = "root"
+
+[[verifier.collect]]
+command = "python3 -m healthcare_sim.admin_cli export_state --out /var/lib/healthcare/state-export.json"
+service = "healthcare"
+timeout_sec = 30.0
+
+[agent]
+timeout_sec = 1200.0
+user = "agent"
+
+[environment]
+os = "linux"
+cpus = 2
+memory_mb = 4096
+storage_mb = 8192
+
+[ports]
+web_ui = 3007

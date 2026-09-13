@@ -9,7 +9,11 @@
     "browser",
     "browser-ui",
     "cli-terminal",
-    "cli-terminal-ui"
+    "cli-terminal-ui",
+    "workstation",
+    "software",
+    "healthcare",
+    "enterprise"
   ],
   "extraPaths": [
     "gmail",
@@ -27,6 +31,15 @@
     "browser",
     "browser-ui",
     "cli-terminal",
-    "cli-terminal-ui"
+    "cli-terminal-ui",
+    "workstation",
+    "workstation/environment",
+    "software",
+    "software/environment",
+    "healthcare",
+    "healthcare/environment",
+    "enterprise",
+    "enterprise/environment"
   ]
 }
+

@@ -1,0 +1,30 @@
+{
+  "name": "software-ui",
+  "version": "1.0.0",
+  "private": true,
+  "description": "OpenGym Procedural SaaS Web Console and Agent Environment",
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev -p 3006",
+    "lint": "next lint",
+    "start": "next start -p 3006"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.454.0",
+    "next": "^15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwind-merge": "^2.5.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.9",
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5",
+    "tailwindcss": "^4.1.9",
+    "typescript": "^5"
+  }
+}

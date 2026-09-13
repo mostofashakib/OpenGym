@@ -1,0 +1,10 @@
+{
+  "include": [
+    ".",
+    "environment"
+  ],
+  "extraPaths": [
+    ".",
+    "environment"
+  ]
+}

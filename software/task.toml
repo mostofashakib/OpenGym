@@ -1,0 +1,50 @@
+schema_version = "1.4"
+artifacts = [
+  { source = "/logs/agent", exclude = ["sessions"] },
+  { source = "/var/lib/software/state-export.json", service = "software" },
+]
+
+[task]
+name = "forge/software-generative-environment"
+version = "1.0.0"
+description = "Interact with procedurally generated business applications spanning diverse domains, schemas, workflows, and visual layouts to execute state transitions and dependency workflows."
+authors = [{ name = "Mostofa Shakib" }]
+keywords = ["software", "generative-applications", "domain-transfer", "state-machine", "workflow-engine", "sqlite", "mcp", "harbor", "rl-environment"]
+
+[metadata]
+difficulty = "hard"
+difficulty_explanation = "Requires discovering domain entities and schemas on the fly, navigating unfamiliar terminology and UI layouts, querying relational records across edge cases, respecting lifecycle state transitions and role-based permissions, and resolving dependency blockers without hardcoded product heuristics."
+category = "agent-environment"
+environment_service = "software"
+database = "sqlite"
+originality = "Procedural software application generation engine with 20 distinct domains and controlled generalization splits."
+
+[verifier]
+timeout_sec = 180.0
+environment_mode = "shared"
+user = "root"
+
+[[verifier.collect]]
+command = "python3 -m software_sim.admin_cli export --db-path /var/lib/software/app.db --out /var/lib/software/state-export.json"
+service = "software"
+timeout_sec = 60.0
+user = "root"
+
+[agent]
+timeout_sec = 1200.0
+user = "agent"
+network_mode = "allowlist"
+allowed_hosts = ["openrouter.ai"]
+
+[environment]
+network_mode = "no-network"
+build_timeout_sec = 600.0
+os = "linux"
+cpus = 2
+memory_mb = 2048
+storage_mb = 4096
+
+[[environment.mcp_servers]]
+name = "software"
+transport = "stdio"
+command = "/usr/local/bin/software-mcp"

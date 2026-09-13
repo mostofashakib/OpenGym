@@ -1,0 +1,37 @@
+schema_version = "1.4"
+
+[task]
+name = "opengym/software-ui"
+version = "1.0.0"
+description = "Procedurally generated business application suite compiling declarative AppSpec schemas across 12+ domains."
+authors = [{ name = "Mostofa Shakib" }]
+keywords = ["procedural", "saas", "domain-transfer", "state-machine", "workflow", "mcp", "harbor"]
+
+[metadata]
+difficulty = "hard"
+category = "software-ui"
+environment_service = "software-ui"
+database = "sqlite"
+
+[verifier]
+timeout_sec = 180.0
+environment_mode = "shared"
+user = "root"
+
+[[verifier.collect]]
+command = "python3 -m software_sim.admin_cli export_state --out /var/lib/software/state-export.json"
+service = "software"
+timeout_sec = 30.0
+
+[agent]
+timeout_sec = 1200.0
+user = "agent"
+
+[environment]
+os = "linux"
+cpus = 2
+memory_mb = 4096
+storage_mb = 8192
+
+[ports]
+web_ui = 3006
